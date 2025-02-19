@@ -1,7 +1,79 @@
 // raylib-zig (c) Nikolas Wipper 2023
 
 const rl = @import("raylib");
-const MAX_COLUMNS = 20;
+const std = @import("std");
+
+const MAX_COLUMNS = 200;
+
+const Triangle = struct {
+    a: rl.Vector3,
+    b: rl.Vector3,
+    c: rl.Vector3,
+    color: rl.Color,
+};
+
+var groundPoints: [25 * 50]Triangle = undefined;
+var groundScale: f32 = 5.0;
+
+fn SetupGround() void {
+    // Implement the ground drawing logic here
+    // Example:
+    // rl.drawPlane(rl.Vector3.init(0, 0, 0), rl.Vector2.init(32, 32), rl.Color.light_gray);
+
+    var lastTriangle: Triangle = undefined;
+    var tris: i32 = 0;
+    for (0..25) |y| {
+        for (0..50) |x| {
+            const xasF32 = @as(f32, @floatFromInt(x));
+            const yasF32 = @as(f32, @floatFromInt(y));
+
+            const r1: u8 = @as(u8, @intCast(rl.getRandomValue(20, 255)));
+            const r2: u8 = @as(u8, @intCast(rl.getRandomValue(20, 255)));
+            const r3: u8 = @as(u8, @intCast(rl.getRandomValue(20, 255)));
+
+            const rndColor = rl.Color.init(r1, r2, r3, 255);
+
+            if (x == 0) {
+                lastTriangle = Triangle{
+                    .a = rl.Vector3.init((xasF32 * groundScale), 0.0, (yasF32 * groundScale)),
+                    .b = rl.Vector3.init((xasF32 * groundScale), 0.0, (yasF32 * groundScale) + groundScale),
+                    .c = rl.Vector3.init((xasF32 * groundScale) + groundScale, 0.0, (yasF32 * groundScale) + groundScale),
+                    .color = rndColor,
+                };
+            } else {
+                if (x % 2 == 1) {
+                    lastTriangle = Triangle{
+                        .a = lastTriangle.a,
+                        .b = lastTriangle.c,
+                        .c = rl.Vector3.init((xasF32 * groundScale), 0.0, (yasF32 * groundScale) + groundScale),
+                        .color = rndColor,
+                    };
+                } else {
+                    lastTriangle = Triangle{
+                        .a = lastTriangle.c,
+                        .b = lastTriangle.b,
+                        .c = rl.Vector3.init((xasF32 * groundScale) + groundScale, 0.0, (yasF32 * groundScale) + groundScale),
+                        .color = rndColor,
+                    };
+                }
+            }
+            groundPoints[y * 50 + x] = lastTriangle;
+            tris += 1;
+        }
+    }
+
+    std.debug.print("Triangles: {}", .{tris});
+}
+
+fn DrawGround() void {
+    var tris: i32 = 0;
+    for (groundPoints) |triangle| {
+        rl.drawTriangle3D(triangle.a, triangle.b, triangle.c, triangle.color);
+        tris += 1;
+    }
+
+    //std.debug.print("Triangles: {}", .{tris});
+}
 
 pub fn main() anyerror!void {
     // Initialization
@@ -13,7 +85,7 @@ pub fn main() anyerror!void {
     defer rl.closeWindow(); // Close window and OpenGL context
 
     rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
-    rl.toggleFullscreen();
+    // rl.toggleFullscreen();
 
     var camera = rl.Camera3D{
         .position = rl.Vector3.init(4, 2, 4),
@@ -30,9 +102,9 @@ pub fn main() anyerror!void {
     for (0..heights.len) |i| {
         heights[i] = @as(f32, @floatFromInt(rl.getRandomValue(1, 12)));
         positions[i] = rl.Vector3.init(
-            @as(f32, @floatFromInt(rl.getRandomValue(-15, 15))),
+            @as(f32, @floatFromInt(rl.getRandomValue(-50, 50))),
             heights[i] / 2.0,
-            @as(f32, @floatFromInt(rl.getRandomValue(-15, 15))),
+            @as(f32, @floatFromInt(rl.getRandomValue(-50, 50))),
         );
         colors[i] = rl.Color.init(
             @as(u8, @intCast(rl.getRandomValue(20, 255))),
@@ -45,7 +117,7 @@ pub fn main() anyerror!void {
     rl.disableCursor(); // Limit cursor to relative movement inside the window
     rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
-
+    SetupGround();
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
         // Update
@@ -65,10 +137,10 @@ pub fn main() anyerror!void {
             defer camera.end();
 
             // Draw ground
-            rl.drawPlane(rl.Vector3.init(0, 0, 0), rl.Vector2.init(32, 32), rl.Color.light_gray);
-            rl.drawCube(rl.Vector3.init(-16.0, 2.5, 0.0), 1.0, 5.0, 32.0, rl.Color.blue); // Draw a blue wall
-            rl.drawCube(rl.Vector3.init(16.0, 2.5, 0.0), 1.0, 5.0, 32.0, rl.Color.lime); // Draw a green wall
-            rl.drawCube(rl.Vector3.init(0.0, 2.5, 16.0), 32.0, 5.0, 1.0, rl.Color.gold); // Draw a yellow wall
+            DrawGround();
+            //rl.drawCube(rl.Vector3.init(-16.0, 2.5, 0.0), 1.0, 5.0, 32.0, rl.Color.blue); // Draw a blue wall
+            //rl.drawCube(rl.Vector3.init(16.0, 2.5, 0.0), 1.0, 5.0, 32.0, rl.Color.lime); // Draw a green wall
+            //rl.drawCube(rl.Vector3.init(0.0, 2.5, 16.0), 32.0, 5.0, 1.0, rl.Color.gold); // Draw a yellow wall
 
             // Draw some cubes around
             for (heights, 0..) |height, i| {
