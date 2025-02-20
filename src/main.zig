@@ -107,10 +107,8 @@ fn SetupGround() void {
 }
 
 fn DrawGround() void {
-    var tris: i32 = 0;
     for (groundPoints) |triangle| {
         rl.drawTriangle3D(triangle.a, triangle.b, triangle.c, triangle.color);
-        tris += 1;
     }
 
     //std.debug.print("Triangles: {}", .{tris});
@@ -142,6 +140,72 @@ fn Vector3sAreEqual(a: rl.Vector3, b: rl.Vector3) bool {
     return a.x == b.x and a.y == b.y and a.z == b.z;
 }
 
+fn GenMeshCustom() rl.Mesh {
+    const tris = maxXTriangles * maxZTriangles;
+    var mesh = rl.Mesh{
+        .vertexCount = 3 * tris,
+        .triangleCount = tris,
+        // @ptrCast -> [*c]f32, @alignCast -> @alignOf(f32)
+        .vertices = @ptrCast(@alignCast(rl.memAlloc(tris * 3 * 3 * @sizeOf(f32)))), // 3 vertices, 3 coordinates each (x, y, z)
+        // @ptrCast -> [*c]f32, @alignCast -> @alignOf(f32)
+        .texcoords = @ptrCast(@alignCast(rl.memAlloc(tris * 3 * 2 * @sizeOf(f32)))), // 3 vertices, 2 coordinates each (x, y)
+        .texcoords2 = null,
+        // @ptrCast -> [*c]f32, @alignCast -> @alignOf(f32)
+        .normals = @ptrCast(@alignCast(rl.memAlloc(tris * 3 * 3 * @sizeOf(f32)))), // 3 vertices, 3 coordinates each (x, y, z)
+        .tangents = null,
+        .colors = null,
+        .indices = null,
+        .animVertices = null,
+        .animNormals = null,
+        .boneIds = null,
+        .boneWeights = null,
+        .vaoId = 0,
+        // UploadMesh() uses RL_CALLOC() macro to allocate MAX_MESH_VERTEX_BUFFERS unsigned ints,
+        // and saves the pointer to them in .vboId
+        .vboId = null,
+        .boneMatrices = null,
+        .boneCount = 0,
+    };
+
+    for (groundPoints, 0..) |triangle, i| {
+        const ii = i * 3;
+        // Vertex at (0, 0, 0)
+        mesh.vertices[ii] = triangle.a.x;
+        mesh.vertices[ii + 1] = triangle.a.y;
+        mesh.vertices[ii + 2] = triangle.a.z;
+        mesh.normals[ii] = 0;
+        mesh.normals[ii + 1] = 1;
+        mesh.normals[ii + 2] = 0;
+        mesh.texcoords[ii] = 0;
+        mesh.texcoords[ii + 1] = 0;
+
+        // Vertex at (1, 0, 2)
+        mesh.vertices[ii + 3] = triangle.b.x;
+        mesh.vertices[ii + 4] = triangle.b.y;
+        mesh.vertices[ii + 5] = triangle.b.z;
+        mesh.normals[ii + 3] = 0;
+        mesh.normals[ii + 4] = 1;
+        mesh.normals[ii + 5] = 0;
+        mesh.texcoords[ii + 2] = 0.5;
+        mesh.texcoords[ii + 3] = 1.0;
+
+        // Vertex at (2, 0, 0)
+        mesh.vertices[ii + 6] = triangle.c.x;
+        mesh.vertices[ii + 7] = triangle.c.y;
+        mesh.vertices[ii + 8] = triangle.c.z;
+        mesh.normals[ii + 6] = 0;
+        mesh.normals[ii + 7] = 1;
+        mesh.normals[ii + 8] = 0;
+        mesh.texcoords[ii + 4] = 1;
+        mesh.texcoords[ii + 5] = 0;
+    }
+
+    // Upload mesh data from CPU (RAM) to GPU (VRAM) memory
+    rl.uploadMesh(&mesh, false);
+
+    return mesh;
+}
+
 pub fn main() anyerror!void {
     // Initialization
     //--------------------------------------------------------------------------------------
@@ -151,7 +215,7 @@ pub fn main() anyerror!void {
     rl.initWindow(screenWidth, screenHeight, "krpg");
     defer rl.closeWindow(); // Close window and OpenGL context
 
-    rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
+    // rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
     // rl.toggleFullscreen();
 
     var camera = rl.Camera3D{
@@ -182,9 +246,14 @@ pub fn main() anyerror!void {
     }
 
     rl.disableCursor(); // Limit cursor to relative movement inside the window
-    rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
+    //rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
     SetupGround();
+    // const mesh = GenMeshCustom();
+    // const @_: rl.Model = rl.loadModelFromMesh(mesh) catch |err| {
+    //     std.debug.print("Error loading model: {}\n", .{err});
+    //     return;
+    // };
     // Main game loop
     var oldCameraPosition = camera.position;
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
@@ -213,7 +282,7 @@ pub fn main() anyerror!void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(rl.Color.ray_white);
+        rl.clearBackground(rl.Color.black);
 
         {
             camera.begin();
@@ -221,6 +290,7 @@ pub fn main() anyerror!void {
 
             // Draw ground
             DrawGround();
+            //rl.drawModel(model, rl.Vector3.init(0, 0, 0), 1.0, rl.Color.white);
             //rl.drawCube(rl.Vector3.init(-16.0, 2.5, 0.0), 1.0, 5.0, 32.0, rl.Color.blue); // Draw a blue wall
             //rl.drawCube(rl.Vector3.init(16.0, 2.5, 0.0), 1.0, 5.0, 32.0, rl.Color.lime); // Draw a green wall
             //rl.drawCube(rl.Vector3.init(0.0, 2.5, 16.0), 32.0, 5.0, 1.0, rl.Color.gold); // Draw a yellow wall
@@ -238,6 +308,8 @@ pub fn main() anyerror!void {
         rl.drawText("First person camera default controls:", 20, 20, 10, rl.Color.black);
         rl.drawText("- Move with keys: W, A, S, D", 40, 40, 10, rl.Color.dark_gray);
         rl.drawText("- Mouse move to look around", 40, 60, 10, rl.Color.dark_gray);
+
+        rl.drawFPS(5, 5);
         //----------------------------------------------------------------------------------
     }
 }
