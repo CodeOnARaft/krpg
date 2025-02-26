@@ -131,8 +131,112 @@ pub fn TestIfPointInTriangle2D(pp: rl.Vector3, aa: rl.Vector3, bb: rl.Vector3, c
 }
 
 var viewDistance: f32 = 1000.0;
-pub fn TriangleIsVisible(triangle: rl.Vector3, pos: rl.Vector3, left: rl.Vector3, right: rl.Vector3) bool {
+
+pub fn TriangleIsVisible(triangle: Triangle, pos: rl.Vector3, left: rl.Vector3, right: rl.Vector3) bool {
     const leftScaled = scaleVec3(left, viewDistance);
     const rightScaled = scaleVec3(right, viewDistance);
-    return TestIfPointInTriangle2D(triangle, pos, addVec3(pos, leftScaled), addVec3(pos, rightScaled));
+
+    return triangleOverlapOrInside(pos, addVec3(pos, leftScaled), addVec3(pos, rightScaled), triangle.a, triangle.b, triangle.c);
+
+    // return TestIfPointInTriangle2D(triangle, pos, addVec3(pos, leftScaled), addVec3(pos, rightScaled));
+}
+
+pub const Triangle = struct {
+    a: rl.Vector3,
+    b: rl.Vector3,
+    c: rl.Vector3,
+    center: rl.Vector3,
+    color: rl.Color,
+};
+
+const Vec2 = struct {
+    x: f32,
+    z: f32,
+};
+
+const edgeVec2 = struct {
+    a: Vec2,
+    b: Vec2,
+};
+
+/// Check if a point (p) is inside a triangle (A, B, C) using barycentric coordinates
+fn pointInTriangle(p: Vec2, a: Vec2, b: Vec2, c: Vec2) bool {
+    const v0 = Vec2{ .x = c.x - a.x, .z = c.z - a.z };
+    const v1 = Vec2{ .x = b.x - a.x, .z = b.z - a.z };
+    const v2 = Vec2{ .x = p.x - a.x, .z = p.z - a.z };
+
+    const dot00 = v0.x * v0.x + v0.z * v0.z;
+    const dot01 = v0.x * v1.x + v0.z * v1.z;
+    const dot02 = v0.x * v2.x + v0.z * v2.z;
+    const dot11 = v1.x * v1.x + v1.z * v1.z;
+    const dot12 = v1.x * v2.x + v1.z * v2.z;
+
+    const invDenom = 1.0 / (dot00 * dot11 - dot01 * dot01);
+    const u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+    const v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+
+    return (u >= 0) and (v >= 0) and (u + v <= 1);
+}
+
+/// Check if two line segments (A1-B1 and A2-B2) intersect
+fn linesIntersect(ea: edgeVec2, eb: edgeVec2) bool {
+    const a1 = ea.a;
+    const b1 = ea.b;
+    const a2 = eb.a;
+    const b2 = eb.b;
+    const d = (b2.z - a2.z) * (b1.x - a1.x) - (b2.x - a2.x) * (b1.z - a1.z);
+    if (d == 0.0) return false; // Parallel lines
+
+    const uA = ((b2.x - a2.x) * (a1.z - a2.z) - (b2.z - a2.z) * (a1.x - a2.x)) / d;
+    const uB = ((b1.x - a1.x) * (a1.z - a2.z) - (b1.z - a1.z) * (a1.x - a2.x)) / d;
+
+    return (uA >= 0 and uA <= 1 and uB >= 0 and uB <= 1);
+}
+
+/// Check if triangle 2 overlaps or is inside triangle 1
+pub fn triangleOverlapOrInside(a1: rl.Vector3, b1: rl.Vector3, c1: rl.Vector3, a2: rl.Vector3, b2: rl.Vector3, c2: rl.Vector3) bool {
+    const tri1 = [_]Vec2{
+        Vec2{ .x = a1.x, .z = a1.z },
+        Vec2{ .x = b1.x, .z = b1.z },
+        Vec2{ .x = c1.x, .z = c1.z },
+    };
+
+    const tri2 = [_]Vec2{
+        Vec2{ .x = a2.x, .z = a2.z },
+        Vec2{ .x = b2.x, .z = b2.z },
+        Vec2{ .x = c2.x, .z = c2.z },
+    };
+
+    // Step 1: Check if all points of triangle 2 are inside triangle 1
+    if (pointInTriangle(tri2[0], tri1[0], tri1[1], tri1[2]) and
+        pointInTriangle(tri2[1], tri1[0], tri1[1], tri1[2]) and
+        pointInTriangle(tri2[2], tri1[0], tri1[1], tri1[2]))
+    {
+        return true; // Triangle 2 is fully inside triangle 1
+    }
+
+    // Step 2: Check for edge intersections
+    const edges1 = [3]edgeVec2{
+        edgeVec2{ .a = tri1[0], .b = tri1[1] },
+        edgeVec2{ .a = tri1[1], .b = tri1[2] },
+        edgeVec2{ .a = tri1[2], .b = tri1[0] },
+    };
+
+    //{ {tri1[0], tri1[1]}, {tri1[1], tri1[2]}, {tri1[2], tri1[0]} };
+    const edges2 = [3]edgeVec2{
+        edgeVec2{ .a = tri2[0], .b = tri2[1] },
+        edgeVec2{ .a = tri2[1], .b = tri2[2] },
+        edgeVec2{ .a = tri2[2], .b = tri2[0] },
+    };
+    //{tri2[0], tri2[1]}, {tri2[1], tri2[2]}, {tri2[2], tri2[0]} };
+
+    for (edges1) |e1| {
+        for (edges2) |e2| {
+            if (linesIntersect(e1, e2)) {
+                return true; // An edge of triangle 2 intersects triangle 1
+            }
+        }
+    }
+
+    return false; // No overlap
 }

@@ -4,7 +4,7 @@ const rlz = @import("raylib-zig");
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    
+
     const raylib_dep = b.dependency("raylib-zig", .{
         .target = target,
         .optimize = optimize,
@@ -34,10 +34,23 @@ pub fn build(b: *std.Build) !void {
         return;
     }
 
+    const map_mod = b.addModule("map", .{
+        .root_source_file = b.path("src/map/map.zig"),
+    });
+    map_mod.addImport("raylib", raylib);
+
+    const utility_mod = b.addModule("utility", .{
+        .root_source_file = b.path("src/utility/utility.zig"),
+    });
+    utility_mod.addImport("raylib", raylib);
+
     const exe = b.addExecutable(.{ .name = "krpg", .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });
 
     exe.linkLibrary(raylib_artifact);
     exe.root_module.addImport("raylib", raylib);
+
+    exe.root_module.addImport("map", map_mod);
+    exe.root_module.addImport("utility", utility_mod);
 
     const run_cmd = b.addRunArtifact(exe);
     const run_step = b.step("run", "Run krpg");
