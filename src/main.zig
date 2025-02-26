@@ -39,6 +39,107 @@ fn FindYFromNormal(normal: rl.Vector3, point: rl.Vector3, x: f32, z: f32) f32 {
     return point.y - (top / bottom);
 }
 
+/// Adds two vectors.
+pub fn addVec3(a: rl.Vector3, b: rl.Vector3) rl.Vector3 {
+    return rl.Vector3{ .x = a.x + b.x, .y = a.y + b.y, .z = a.z + b.z };
+}
+
+/// Subtracts b from a.
+pub fn subVec3(a: rl.Vector3, b: rl.Vector3) rl.Vector3 {
+    return rl.Vector3{ .x = a.x - b.x, .y = a.y - b.y, .z = a.z - b.z };
+}
+
+/// Scales a vector by a scalar.
+pub fn scaleVec3(v: rl.Vector3, s: f32) rl.Vector3 {
+    return rl.Vector3{ .x = v.x * s, .y = v.y * s, .z = v.z * s };
+}
+
+pub fn triangleCenter(a: rl.Vector3, b: rl.Vector3, c: rl.Vector3) rl.Vector3 {
+    // The centroid is the average of the vertices.
+    return scaleVec3(addVec3(addVec3(a, b), c), 1.0 / 3.0);
+}
+pub fn lengthVec3(v: rl.Vector3) f32 {
+    return std.math.sqrt(dotVec3(v, v));
+}
+
+pub fn dotVec3(a: rl.Vector3, b: rl.Vector3) f32 {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+/// Computes the cross product of two vectors.
+pub fn cross(a: rl.Vector3, b: rl.Vector3) rl.Vector3 {
+    return rl.Vector3{
+        .x = a.y * b.z - a.z * b.y,
+        .y = a.z * b.x - a.x * b.z,
+        .z = a.x * b.y - a.y * b.x,
+    };
+}
+
+pub fn normalizeVec3(v: rl.Vector3) rl.Vector3 {
+    return scaleVec3(v, 1.0 / lengthVec3(v));
+}
+
+pub fn calculateLightIntensity(
+    triangleNormal: rl.Vector3,
+    a: rl.Vector3,
+    b: rl.Vector3,
+    c: rl.Vector3,
+    sunPosition: rl.Vector3,
+) f32 {
+    // Compute the center of the triangle.
+    const center = triangleCenter(a, b, c);
+    // Compute a normalized light direction from the triangle center to the sun.
+    const lightDir = normalizeVec3(subVec3(sunPosition, center));
+    std.debug.print("Light direction: {}, {}, {}\n", .{ lightDir.x, lightDir.y, lightDir.z });
+
+    // Compute the diffuse intensity (clamped to zero if the angle is more than 90°).
+
+    var diffuseIntensity = dotVec3(triangleNormal, lightDir);
+
+    if (diffuseIntensity < 0.0) {
+        diffuseIntensity = 0.0;
+    }
+
+    // if (triangleNormal.z < 0.0 and triangleNormal.x < 0.0) {
+    //     diffuseIntensity = -1.0 * (diffuseIntensity * 0.75);
+    // } else if (triangleNormal.z > 0.0 and triangleNormal.x > 0.0) {
+    //     diffuseIntensity = diffuseIntensity * 1.25;
+    // }
+
+    // return diffuseIntensity;
+
+    var ambientIntensity: f32 = 0.18;
+    ambientIntensity = ambientIntensity + (1.0 - ambientIntensity) * diffuseIntensity;
+    while (ambientIntensity > 1.0) {
+        ambientIntensity = ambientIntensity / 10.0;
+    }
+
+    return ambientIntensity;
+}
+
+fn applyIntensity(base: rl.Color, intensity: f32) rl.Color {
+    // Clamp intensity to the range [0.0, 1.0] if needed.
+    //const clampedIntensity: f32 = std.math.clamp(intensity, 0.0, 1.0);
+    //std.debug.print("Intensity: {}\n", .{clampedIntensity});
+    const rf32 = std.math.clamp(@as(f32, @floatFromInt(@as(i32, base.r))) * intensity, 0, 255);
+    const gf32 = std.math.clamp(@as(f32, @floatFromInt(@as(i32, base.g))) * intensity, 0, 255);
+    const bf32 = std.math.clamp(@as(f32, @floatFromInt(@as(i32, base.b))) * intensity, 0, 255);
+
+    //std.debug.print("r: {}, g: {}, b: {}\n", .{ base.r, base.g, base.b });
+    //std.debug.print("r: {}, g: {}, b: {}\n", .{ rf32, gf32, bf32 });
+
+    // Multiply each color channel (converted to f32) by the intensity.
+    // We round the result before casting back to u8.
+    const color = rl.Color{
+        .r = @as(u8, @intFromFloat(std.math.round(rf32))),
+        .g = @as(u8, @intFromFloat(std.math.round(gf32))),
+        .b = @as(u8, @intFromFloat(std.math.round(bf32))),
+        .a = base.a,
+    };
+
+    // std.debug.print("r: {}, g: {}, b: {}\n", .{ color.r, color.g, color.b });
+    return color;
+}
 fn SetupGround() void {
     // Implement the ground drawing logic here
     // Example:
@@ -50,13 +151,8 @@ fn SetupGround() void {
             //const xasF32 = @as(f32, @floatFromInt(x));
             const yasF32 = @as(f32, @floatFromInt(y));
 
-            const r1: u8 = @as(u8, @intCast(rl.getRandomValue(20, 255)));
-            const r2: u8 = @as(u8, @intCast(rl.getRandomValue(20, 255)));
-            const r3: u8 = @as(u8, @intCast(rl.getRandomValue(20, 255)));
-
-            const rndColor = rl.Color.init(r1, r2, r3, 255);
             // random value between 0 and 2
-            const h = rl.getRandomValue(0, 40);
+            const h = rl.getRandomValue(0, 35);
             // h as f32
             const hf32 = @as(f32, @floatFromInt(h)) / 10.0;
             var oldhf32 = hf32;
@@ -68,7 +164,7 @@ fn SetupGround() void {
                     .a = rl.Vector3.init(0, oldhf32, (yasF32 * groundScale)),
                     .b = rl.Vector3.init(0, hf32, (yasF32 * groundScale) + groundScale),
                     .c = rl.Vector3.init(groundScale, hf32, (yasF32 * groundScale) + groundScale),
-                    .color = rndColor,
+                    .color = rl.Color.green,
                 };
             } else {
                 if (x % 2 == 1) {
@@ -79,18 +175,18 @@ fn SetupGround() void {
                         .a = lastTriangle.a,
                         .b = lastTriangle.c,
                         .c = rl.Vector3.init(lastTriangle.c.x, oldhf32, (yasF32 * groundScale)),
-                        .color = rndColor,
+                        .color = rl.Color.green,
                     };
                 } else {
                     lastTriangle = Triangle{
                         .a = lastTriangle.c,
                         .b = lastTriangle.b,
                         .c = rl.Vector3.init(lastTriangle.c.x + groundScale, hf32, (yasF32 * groundScale) + groundScale),
-                        .color = rndColor,
+                        .color = rl.Color.green,
                     };
                 }
             }
-            groundPoints[y * 50 + x] = lastTriangle;
+
             if (maxTileX < lastTriangle.c.x) {
                 maxTileX = lastTriangle.c.x;
             }
@@ -102,6 +198,18 @@ fn SetupGround() void {
             const edge2 = GetEdgeVector(lastTriangle.a, lastTriangle.c);
             const normal = CrossProduct(edge1, edge2);
             groundNormals[y * 50 + x] = normal;
+
+            const intensity = calculateLightIntensity(normal, lastTriangle.a, lastTriangle.b, lastTriangle.c, rl.Vector3.init(20.5, 100, 11.5));
+            const color = applyIntensity(lastTriangle.color, intensity);
+
+            lastTriangle = Triangle{
+                .a = lastTriangle.a,
+                .b = lastTriangle.b,
+                .c = lastTriangle.c,
+                .color = color,
+            };
+
+            groundPoints[y * 50 + x] = lastTriangle;
         }
     }
 }
@@ -109,6 +217,7 @@ fn SetupGround() void {
 fn DrawGround() void {
     for (groundPoints) |triangle| {
         rl.drawTriangle3D(triangle.a, triangle.b, triangle.c, triangle.color);
+        // std.debug.print("Triangle: {}, {}, {}\n", .{ triangle.color.r, triangle.color.g, triangle.color.b });
     }
 
     //std.debug.print("Triangles: {}", .{tris});
