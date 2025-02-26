@@ -43,6 +43,7 @@ pub fn build(b: *std.Build) !void {
         .root_source_file = b.path("src/utility/utility.zig"),
     });
     utility_mod.addImport("raylib", raylib);
+    map_mod.addImport("utility", utility_mod);
 
     const exe = b.addExecutable(.{ .name = "krpg", .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });
 

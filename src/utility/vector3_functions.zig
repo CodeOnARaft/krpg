@@ -146,6 +146,7 @@ pub const Triangle = struct {
     b: rl.Vector3,
     c: rl.Vector3,
     center: rl.Vector3,
+    normal: rl.Vector3,
     color: rl.Color,
 };
 
