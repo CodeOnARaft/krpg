@@ -7,6 +7,8 @@ var groundScale: f32 = 10.0;
 
 const ground_sector = struct {
     triangles: [maxXTriangles * maxZTriangles]util.Triangle,
+    startX: f32 = 0.0,
+    startZ: f32 = 0.0,
 
     pub fn new() ground_sector {
         var triangles: [maxXTriangles * maxZTriangles]util.Triangle = undefined;
@@ -20,7 +22,7 @@ const ground_sector = struct {
                 .color = rl.Color.white,
             };
         }
-        return ground_sector{ .triangles = triangles };
+        return ground_sector{ .triangles = triangles, .startX = 0.0, .startZ = 0.0 };
     }
 };
 
@@ -38,6 +40,18 @@ pub fn UpdateCameraPosition(camera: *rl.Camera3D) void {
             }
         }
     }
+}
+
+pub fn SaveGroundSectorToFile(sector:ground_sector){
+    // file name should include the sector's start x and z
+    const filename = format( "map/ground_sector_{}_{}.gs", .{sector.startX, sector.startZ});
+    
+    const file = std.fs.cwd().openFile("ground_sector.bin", .{ .write = true, .create = true, .truncate = true, .exclusive = false });
+    const writer = file.writer();
+    writer.write(sector);
+    writer.flush();
+    writer.close();
+    file.close();
 }
 
 pub fn SetupGround() void {
