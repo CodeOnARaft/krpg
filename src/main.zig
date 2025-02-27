@@ -2,6 +2,7 @@ const rl = @import("raylib");
 const std = @import("std");
 const util = @import("utility");
 const map = @import("map");
+const settings = @import("settings");
 
 fn Vector3sAreEqual(a: rl.Vector3, b: rl.Vector3) bool {
     return a.x == b.x and a.y == b.y and a.z == b.z;
@@ -10,10 +11,8 @@ fn Vector3sAreEqual(a: rl.Vector3, b: rl.Vector3) bool {
 pub fn main() anyerror!void {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const screenWidth = 1280;
-    const screenHeight = 720;
 
-    rl.initWindow(screenWidth, screenHeight, "krpg");
+    rl.initWindow(settings.screenWidth, settings.screenHeight, "krpg");
     defer rl.closeWindow(); // Close window and OpenGL context
 
     var camera: *rl.Camera3D = &util.camera;
@@ -31,6 +30,8 @@ pub fn main() anyerror!void {
             map.UpdateCameraPosition(camera);
             oldCameraPosition = camera.position;
         }
+
+        settings.gameSettings.update();
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -47,6 +48,8 @@ pub fn main() anyerror!void {
             // Draw ground
             map.DrawGround();
         }
+
+        settings.drawConsole();
 
         rl.drawRectangle(10, 10, 220, 70, rl.Color.sky_blue.fade(0.5));
         rl.drawRectangleLines(10, 10, 220, 70, rl.Color.blue);

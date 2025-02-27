@@ -11,6 +11,7 @@ pub fn build(b: *std.Build) !void {
     });
 
     const raylib = raylib_dep.module("raylib");
+    const raygui = raylib_dep.module("raygui");
     const raylib_artifact = raylib_dep.artifact("raylib");
 
     //web exports are completely separate
@@ -34,24 +35,41 @@ pub fn build(b: *std.Build) !void {
         return;
     }
 
+    // create modules
     const map_mod = b.addModule("map", .{
         .root_source_file = b.path("src/map/map.zig"),
     });
-    map_mod.addImport("raylib", raylib);
 
     const utility_mod = b.addModule("utility", .{
         .root_source_file = b.path("src/utility/utility.zig"),
     });
+
+    const settings_mod = b.addModule("settings", .{
+        .root_source_file = b.path("src/settings/settings.zig"),
+    });
+
+    // add imports
+    map_mod.addImport("raylib", raylib);
     utility_mod.addImport("raylib", raylib);
+    settings_mod.addImport("raylib", raylib);
+
+    map_mod.addImport("raygui", raygui);
+    utility_mod.addImport("raygui", raygui);
+    settings_mod.addImport("raygui", raygui);
+
     map_mod.addImport("utility", utility_mod);
+    map_mod.addImport("settings", settings_mod);
+    settings_mod.addImport("settings", settings_mod);
 
     const exe = b.addExecutable(.{ .name = "krpg", .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });
 
     exe.linkLibrary(raylib_artifact);
     exe.root_module.addImport("raylib", raylib);
+    exe.root_module.addImport("raygui", raygui);
 
     exe.root_module.addImport("map", map_mod);
     exe.root_module.addImport("utility", utility_mod);
+    exe.root_module.addImport("settings", settings_mod);
 
     const run_cmd = b.addRunArtifact(exe);
     const run_step = b.step("run", "Run krpg");
