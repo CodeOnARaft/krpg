@@ -1,5 +1,6 @@
 const util = @import("utility");
 const rl = @import("raylib");
+const std = @import("std");
 
 const maxZTriangles = 25;
 const maxXTriangles = 50;
@@ -7,8 +8,8 @@ var groundScale: f32 = 10.0;
 
 const ground_sector = struct {
     triangles: [maxXTriangles * maxZTriangles]util.Triangle,
-    startX: f32 = 0.0,
-    startZ: f32 = 0.0,
+    startX: i32 = 0,
+    startZ: i32 = 0,
 
     pub fn new() ground_sector {
         var triangles: [maxXTriangles * maxZTriangles]util.Triangle = undefined;
@@ -42,16 +43,39 @@ pub fn UpdateCameraPosition(camera: *rl.Camera3D) void {
     }
 }
 
-pub fn SaveGroundSectorToFile(sector:ground_sector){
-    // file name should include the sector's start x and z
-    const filename = format( "map/ground_sector_{}_{}.gs", .{sector.startX, sector.startZ});
-    
-    const file = std.fs.cwd().openFile("ground_sector.bin", .{ .write = true, .create = true, .truncate = true, .exclusive = false });
+pub fn SaveGroundSectorToFile(sector: ground_sector) anyerror!bool {
+    const cwd = std.fs.cwd();
+
+    // get generic allowcator
+    const allocator = std.heap.page_allocator;
+    const filename = std.fmt.allocPrint(allocator, "map/ground_sector_{}_{}.gs", .{ sector.startX, sector.startZ }) catch |err| {
+        std.debug.print("Error allocating filename: {}\n", .{err});
+        return false;
+    };
+
+    cwd.makeDir("map") catch |err| {
+        std.debug.print("Error creating file: {}\n", .{err});
+    };
+
+    const file = cwd.createFile(filename, std.fs.File.CreateFlags{
+        .read = false,
+        .truncate = true,
+    }) catch |err| {
+        std.debug.print("Error creating file: {}\n", .{err});
+        return false;
+    };
+    defer file.close();
+
     const writer = file.writer();
-    writer.write(sector);
-    writer.flush();
-    writer.close();
-    file.close();
+    for (sector.triangles) |triangle| {
+        // a, b, c, center, normal, color
+        writer.print("{}, {}, {} , {}, {}, {} , {}, {}, {} , {}, {}, {} , {}, {}, {} ,{}, {}, {}, {}\n", .{ triangle.a.x, triangle.a.y, triangle.a.z, triangle.b.x, triangle.b.y, triangle.b.z, triangle.c.x, triangle.c.y, triangle.c.z, triangle.center.x, triangle.center.y, triangle.center.z, triangle.normal.x, triangle.normal.y, triangle.normal.z, triangle.color.r, triangle.color.g, triangle.color.b, triangle.color.a }) catch |err| {
+            std.debug.print("Error writing to file: {}\n", .{err});
+            return false;
+        };
+    }
+
+    return true;
 }
 
 pub fn SetupGround() void {
@@ -126,6 +150,13 @@ pub fn SetupGround() void {
             current_ground_sector.triangles[y * 50 + x] = lastTriangle;
         }
     }
+
+    const dd = SaveGroundSectorToFile(current_ground_sector) catch |err| {
+        std.debug.print("Error saving ground sector to file: {}\n", .{err});
+        return;
+    };
+
+    std.debug.print("Ground sector saved to file: {}\n", .{dd});
 }
 
 pub fn DrawGround() void {
