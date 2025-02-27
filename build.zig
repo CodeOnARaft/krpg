@@ -60,6 +60,7 @@ pub fn build(b: *std.Build) !void {
     map_mod.addImport("utility", utility_mod);
     map_mod.addImport("settings", settings_mod);
     settings_mod.addImport("settings", settings_mod);
+    settings_mod.addImport("utility", utility_mod);
 
     const exe = b.addExecutable(.{ .name = "krpg", .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });
 

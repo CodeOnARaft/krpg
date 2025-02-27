@@ -1,5 +1,6 @@
 const raylib = @import("raylib");
 const std = @import("std");
+const settings = @import("settings");
 
 pub const screenWidth = 1280;
 pub const screenHeight = 720;
@@ -12,9 +13,12 @@ const Settings = struct {
     consoleOpen: bool = false,
 
     pub fn update(self: *Settings) void {
-        if (raylib.isKeyReleased(raylib.KeyboardKey.f11)) {
-            self.consoleOpen = !self.consoleOpen;
-            std.debug.print("updating game settings {}\n", .{self.consoleOpen});
+        if (raylib.isKeyReleased(raylib.KeyboardKey.grave)) {
+            settings.consoleToggle();
+        }
+
+        if (raylib.isKeyReleased(raylib.KeyboardKey.p)) {
+            self.paused = !self.paused;
         }
     }
 };
