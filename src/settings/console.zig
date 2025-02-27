@@ -27,7 +27,17 @@ fn toSentinel(allocator: std.mem.Allocator, text: []const u8) anyerror![*:0]cons
 }
 
 fn appendChar(allocator: std.mem.Allocator, text: []const u8, new_char: u8) ![]const u8 {
+    std.debug.print("Appending char: {}\n", .{new_char});
     const new_text = try std.fmt.allocPrint(allocator, "{s}{c}", .{ text, new_char });
+    allocator.free(text); // Free the old memory
+    return new_text;
+}
+
+fn removeChar(allocator: std.mem.Allocator, text: []const u8) ![]const u8 {
+    if (text.len == 0) {
+        return text;
+    }
+    const new_text = try std.fmt.allocPrint(allocator, "{s}", .{text[0 .. text.len - 1]});
     allocator.free(text); // Free the old memory
     return new_text;
 }
@@ -41,11 +51,17 @@ pub fn drawConsole() void {
         if (!consoleOpening and !consoleClosing) {
             const released = util.findKeyReleased();
             if (released.isPressed) {
-                typedText = appendChar(generalAllocator, typedText, released.value) catch |err| {
-                    std.debug.print("Error appending char: {}\n", .{err});
-                    return;
-                };
-                std.debug.print("Typed text: {s}\n", .{typedText});
+                if (released.isBackspace) {
+                    typedText = removeChar(generalAllocator, typedText) catch |err| {
+                        std.debug.print("Error removing char: {}\n", .{err});
+                        return;
+                    };
+                } else {
+                    typedText = appendChar(generalAllocator, typedText, released.value) catch |err| {
+                        std.debug.print("Error appending char: {}\n", .{err});
+                        return;
+                    };
+                }
             }
         }
 
@@ -55,7 +71,7 @@ pub fn drawConsole() void {
         };
 
         _ = gui.guiPanel(raylib.Rectangle{ .x = 0, .y = 0, .width = settings.screenWidthf32, .height = consoleHeight }, "Console");
-        _ = gui.guiLabel(raylib.Rectangle{ .x = 5, .y = settings.screenWidthf32 - 10, .width = settings.screenWidthf32, .height = 20 }, tt);
+        _ = gui.guiLabel(raylib.Rectangle{ .x = 5, .y = settings.screenHeightf32 / 2 - 25, .width = settings.screenWidthf32 - 10, .height = 20 }, tt);
     }
 }
 
