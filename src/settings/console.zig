@@ -41,7 +41,6 @@ fn removeChar(allocator: std.mem.Allocator, text: []const u8) ![]const u8 {
     allocator.free(text); // Free the old memory
     return new_text;
 }
-
 pub fn drawConsole() void {
     if (consoleOpening or consoleClosing) {
         consoleUpdate();
@@ -56,6 +55,11 @@ pub fn drawConsole() void {
                         std.debug.print("Error removing char: {}\n", .{err});
                         return;
                     };
+                } else if (released.isEnter) {
+                    std.debug.print("Typed text: {s}\n", .{typedText});
+                    handleCommand(typedText);
+                    generalAllocator.free(typedText);
+                    typedText = "";
                 } else {
                     typedText = appendChar(generalAllocator, typedText, released.value) catch |err| {
                         std.debug.print("Error appending char: {}\n", .{err});
@@ -65,7 +69,12 @@ pub fn drawConsole() void {
             }
         }
 
-        const tt = toSentinel(generalAllocator, typedText) catch |err| {
+        const terminal: []const u8 = std.fmt.allocPrint(generalAllocator, "> {s}", .{typedText}) catch |err| {
+            std.debug.print("Error allocating terminal: {}\n", .{err});
+            return;
+        };
+        defer generalAllocator.free(terminal);
+        const tt = toSentinel(generalAllocator, terminal) catch |err| {
             std.debug.print("Error allocating typedText: {}\n", .{err});
             return;
         };
@@ -126,4 +135,24 @@ fn closeConsole() void {
 
     consoleOpening = false;
     consoleClosing = true;
+}
+
+fn handleCommand(command: []const u8) void {
+    std.debug.print("Handling command: {s}\n", .{command});
+    if (std.mem.eql(u8, command, "EXIT")) {
+        closeConsole();
+        return;
+    }
+
+    if (command.len >= "REGEN-SEC".len and std.mem.eql(u8, command[0.."REGEN-SEC".len], "REGEN-SEC")) {
+        const sec = command["REGEN-SEC".len..];
+        if (sec.len == 0) {
+            std.debug.print("No seconds provided\n", .{});
+            return;
+        }
+
+        std.debug.print("Seconds provided: {s}\n", .{sec});
+
+        return;
+    }
 }
