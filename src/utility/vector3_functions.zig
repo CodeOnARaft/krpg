@@ -132,6 +132,10 @@ pub fn TestIfPointInTriangle2D(pp: rl.Vector3, aa: rl.Vector3, bb: rl.Vector3, c
 
 var viewDistance: f32 = 1000.0;
 
+pub fn Vector3sAreEqual(a: rl.Vector3, b: rl.Vector3) bool {
+    return a.x == b.x and a.y == b.y and a.z == b.z;
+}
+
 pub fn TriangleIsVisible(triangle: Triangle, pos: rl.Vector3, left: rl.Vector3, right: rl.Vector3) bool {
     const leftScaled = scaleVec3(left, viewDistance);
     const rightScaled = scaleVec3(right, viewDistance);

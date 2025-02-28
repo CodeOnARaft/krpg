@@ -1,0 +1,26 @@
+const raylib = @import("raylib");
+const std = @import("std");
+const settings = @import("settings");
+
+pub const screenWidth = 1280;
+pub const screenHeight = 720;
+
+pub const screenWidthf32: f32 = 1280.0;
+pub const screenHeightf32: f32 = 720.0;
+
+const Settings = struct {
+    paused: bool = false,
+    consoleOpen: bool = false,
+
+    pub fn update(self: *Settings) void {
+        if (raylib.isKeyReleased(raylib.KeyboardKey.grave)) {
+            settings.consoleToggle();
+        }
+
+        if (raylib.isKeyReleased(raylib.KeyboardKey.p)) {
+            self.paused = !self.paused;
+        }
+    }
+};
+
+pub var gameSettings = Settings{};
