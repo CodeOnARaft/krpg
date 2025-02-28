@@ -15,6 +15,7 @@ pub fn main() anyerror!void {
 
     rl.initWindow(screenWidth, screenHeight, "krpg");
     defer rl.closeWindow(); // Close window and OpenGL context
+    // rl.toggleFullscreen();
 
     var camera: *rl.Camera3D = &util.camera;
 
@@ -23,6 +24,7 @@ pub fn main() anyerror!void {
     map.UpdateCameraPosition(camera);
 
     var oldCameraPosition = camera.position;
+    var showDebug = false;
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
         // Update
         //----------------------------------------------------------------------------------
@@ -30,6 +32,10 @@ pub fn main() anyerror!void {
         if (!Vector3sAreEqual(camera.position, oldCameraPosition)) {
             map.UpdateCameraPosition(camera);
             oldCameraPosition = camera.position;
+        }
+
+        if (rl.isKeyReleased(rl.KeyboardKey.f5)) {
+            showDebug = !showDebug;
         }
         //----------------------------------------------------------------------------------
 
@@ -48,14 +54,12 @@ pub fn main() anyerror!void {
             map.DrawGround();
         }
 
-        rl.drawRectangle(10, 10, 220, 70, rl.Color.sky_blue.fade(0.5));
-        rl.drawRectangleLines(10, 10, 220, 70, rl.Color.blue);
+        if (showDebug) {
+            rl.drawRectangle(10, 10, 220, 70, rl.Color.sky_blue.fade(0.5));
+            rl.drawRectangleLines(10, 10, 220, 70, rl.Color.blue);
 
-        rl.drawText("First person camera default controls:", 20, 20, 10, rl.Color.black);
-        rl.drawText("- Move with keys: W, A, S, D", 40, 40, 10, rl.Color.dark_gray);
-        rl.drawText("- Mouse move to look around", 40, 60, 10, rl.Color.dark_gray);
-
-        rl.drawFPS(5, 5);
+            rl.drawFPS(20, 20);
+        }
         //----------------------------------------------------------------------------------
     }
 }
