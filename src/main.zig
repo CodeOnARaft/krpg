@@ -53,18 +53,17 @@ pub fn main() anyerror!void {
             // Draw ground
             //map.DrawGround();
         }
-
+        settings.drawConsole();
         if (showDebug) {
-            settings.drawConsole();
+            rl.drawRectangle(10, 10, 220, 70, rl.Color.sky_blue.fade(0.5));
+            rl.drawRectangleLines(10, 10, 220, 70, rl.Color.blue);
 
-        // rl.drawRectangle(10, 10, 220, 70, rl.Color.sky_blue.fade(0.5));
-            // rl.drawRectangleLines(10, 10, 220, 70, rl.Color.blue);
+            // rl.drawText("First person camera default controls:", 20, 20, 10, rl.Color.black);
+            // rl.drawText("- Move with keys: W, A, S, D", 40, 40, 10, rl.Color.dark_gray);
+            // rl.drawText("- Mouse move to look around", 40, 60, 10, rl.Color.dark_gray);
 
-        // rl.drawText("First person camera default controls:", 20, 20, 10, rl.Color.black);
-        // rl.drawText("- Move with keys: W, A, S, D", 40, 40, 10, rl.Color.dark_gray);
-        // rl.drawText("- Mouse move to look around", 40, 60, 10, rl.Color.dark_gray);
-
-        // rl.drawFPS(5, 5);
+            rl.drawFPS(5, 5);
+        }
         //----------------------------------------------------------------------------------
     }
 }
