@@ -29,18 +29,28 @@ const ground_sector = struct {
 
 var current_ground_sector: ground_sector = undefined;
 
-pub fn UpdateCameraPosition(camera: *rl.Camera3D) void {
-    const pos = camera.position;
+pub fn GetYValueBasedOnLocation(x: f32, z: f32) f32 {
+    const xasF32 = @as(f32, x);
+    const zasF32 = @as(f32, z);
+    const v3 = rl.Vector3.init(xasF32, 0, zasF32);
+
+    var y: f32 = 0.0;
     for (current_ground_sector.triangles) |triangle| {
-        if (pos.z >= triangle.a.z and (pos.z <= triangle.c.z or pos.z < triangle.b.z)) {
-            if (util.TestIfPointInTriangle2D(pos, triangle.a, triangle.b, triangle.c)) {
-                const y = util.FindYFromNormal(triangle.normal, triangle.a, pos.x, pos.z) + 2;
-                camera.target.y = camera.target.y + (y - camera.position.y);
-                camera.position.y = y;
+        if (zasF32 >= triangle.a.z and (zasF32 <= triangle.c.z or zasF32 < triangle.b.z)) {
+            if (util.TestIfPointInTriangle2D(v3, triangle.a, triangle.b, triangle.c)) {
+                y = util.FindYFromNormal(triangle.normal, triangle.a, v3.x, v3.z) + 2;
+
                 break;
             }
         }
     }
+    return y;
+}
+
+pub fn UpdateCameraPosition(camera: *rl.Camera3D) void {
+    const y = GetYValueBasedOnLocation(camera.position.x, camera.position.z);
+    camera.target.y = camera.target.y + (y - camera.position.y);
+    camera.position.y = y;
 }
 
 pub fn SaveGroundSectorToFile(sector: ground_sector) anyerror!bool {
