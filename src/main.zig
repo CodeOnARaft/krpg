@@ -1,44 +1,44 @@
-const rl = @import("raylib");
+const raylib = @import("raylib");
 const std = @import("std");
 const util = @import("utility");
 const map = @import("map");
 const settings = @import("settings");
+const types = @import("types");
 
-var mary: NPC = NPC{
+var mary: types.NPC = types.NPC{
     .name = "Mary",
-    .position = rl.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
+    .position = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
 };
 
 pub fn main() anyerror!void {
     // Initialization
     //--------------------------------------------------------------------------------------
 
-    rl.initWindow(settings.screenWidth, settings.screenHeight, "krpg");
-    defer rl.closeWindow(); // Close window and OpenGL context
-    rl.toggleFullscreen();
+    raylib.initWindow(settings.screenWidth, settings.screenHeight, "krpg");
+    defer raylib.closeWindow(); // Close window and OpenGL context
+    raylib.toggleFullscreen();
 
-    var camera: *rl.Camera3D = &util.camera;
+    var camera: *raylib.Camera3D = &util.camera;
 
-    rl.disableCursor();
+    raylib.disableCursor();
     map.SetupGround();
     map.UpdateCameraPosition(camera);
 
     var oldCameraPosition = camera.position;
     var showDebug = false;
 
-    mary.texture = try rl.loadTexture("npc.png");
+    mary.texture = try raylib.loadTexture("npc.png");
     //const marytextureheight: f32 = @floatFromInt(mary.texture.height);
     const maryY = map.GetYValueBasedOnLocation(10, 10);
-    std.debug.print("Mary Y: {}\n", .{maryY});
-    mary.position = rl.Vector3{ .x = 10, .y = maryY, .z = 10.0 };
-    var npcs = [1]NPC{mary};
+    mary.position = raylib.Vector3{ .x = 10, .y = maryY, .z = 10.0 };
+    const npcs = [1]types.NPC{mary};
 
-    while (!rl.windowShouldClose()) { // Detect window close button or ESC key
+    while (!raylib.windowShouldClose()) { // Detect window close button or ESC key
         // Update
         //----------------------------------------------------------------------------------
         if (!settings.gameSettings.paused) {
             camera.update(.first_person);
-            camera.up = rl.Vector3.init(0, 1, 0);
+            camera.up = raylib.Vector3.init(0, 1, 0);
 
             if (!util.Vector3sAreEqual(camera.position, oldCameraPosition)) {
                 map.UpdateCameraPosition(camera);
@@ -46,7 +46,7 @@ pub fn main() anyerror!void {
             }
         }
 
-        if (rl.isKeyReleased(rl.KeyboardKey.f5)) {
+        if (raylib.isKeyReleased(raylib.KeyboardKey.f5)) {
             showDebug = !showDebug;
         }
 
@@ -55,10 +55,10 @@ pub fn main() anyerror!void {
 
         // Draw
         //----------------------------------------------------------------------------------
-        rl.beginDrawing();
-        defer rl.endDrawing();
+        raylib.beginDrawing();
+        defer raylib.endDrawing();
 
-        rl.clearBackground(rl.Color.black);
+        raylib.clearBackground(raylib.Color.black);
 
         {
             camera.begin();
@@ -68,36 +68,29 @@ pub fn main() anyerror!void {
             map.DrawGround();
             for (npcs) |npc| {
                 if (npc.active) {
-                    rl.drawBillboard(camera.*, npc.texture, npc.position, 4.0, rl.Color.white);
+                    raylib.drawBillboard(camera.*, npc.texture, npc.position, 1.5, raylib.Color.white);
                 }
             }
         }
-        const npc_speed = 3.0 * rl.getFrameTime();
-        mary.position = rl.Vector3{
-            .x = mary.position.x + npc_speed,
-            .y = map.GetYValueBasedOnLocation(mary.position.x + npc_speed, mary.position.z),
-            .z = mary.position.z,
-        };
-        npcs = [1]NPC{mary};
+        // const npc_speed = 3.0 * raylib.getFrameTime();
+        // mary.position = raylib.Vector3{
+        //     .x = mary.position.x + npc_speed,
+        //     .y = map.GetYValueBasedOnLocation(mary.position.x + npc_speed, mary.position.z),
+        //     .z = mary.position.z,
+        // };
+        // npcs = [1]NPC{mary};
 
         settings.drawConsole();
         if (showDebug) {
-            rl.drawRectangle(10, 10, 220, 70, rl.Color.sky_blue.fade(0.5));
-            rl.drawRectangleLines(10, 10, 220, 70, rl.Color.blue);
+            raylib.drawRectangle(10, 10, 220, 70, raylib.Color.sky_blue.fade(0.5));
+            raylib.drawRectangleLines(10, 10, 220, 70, raylib.Color.blue);
 
-            // rl.drawText("First person camera default controls:", 20, 20, 10, rl.Color.black);
-            // rl.drawText("- Move with keys: W, A, S, D", 40, 40, 10, rl.Color.dark_gray);
-            // rl.drawText("- Mouse move to look around", 40, 60, 10, rl.Color.dark_gray);
+            // raylib.drawText("First person camera default controls:", 20, 20, 10, raylib.Color.black);
+            // raylib.drawText("- Move with keys: W, A, S, D", 40, 40, 10, raylib.Color.dark_gray);
+            // raylib.drawText("- Mouse move to look around", 40, 60, 10, raylib.Color.dark_gray);
 
-            rl.drawFPS(5, 5);
+            raylib.drawFPS(5, 5);
         }
         //----------------------------------------------------------------------------------
     }
 }
-
-const NPC = struct {
-    name: []const u8,
-    position: rl.Vector3,
-    texture: rl.Texture2D = undefined,
-    active: bool = true,
-};

@@ -2,9 +2,11 @@ const std = @import("std");
 const v3 = @import("vector3_functions.zig");
 const rl = @import("raylib");
 
+const cameraDefaultY = 3.0;
+
 pub var camera = rl.Camera3D{
-    .position = rl.Vector3.init(50, 2, 50),
-    .target = rl.Vector3.init(100, 2, 100),
+    .position = rl.Vector3.init(50, cameraDefaultY, 50),
+    .target = rl.Vector3.init(100, cameraDefaultY, 100),
     .up = rl.Vector3.init(0, 1, 0),
     .fovy = 60,
     .projection = .perspective,

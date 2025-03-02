@@ -70,10 +70,8 @@ pub fn calculateLightIntensity(
     const center = triangleCenter(a, b, c);
     // Compute a normalized light direction from the triangle center to the sun.
     const lightDir = normalizeVec3(subVec3(sunPosition, center));
-    std.debug.print("Light direction: {}, {}, {}\n", .{ lightDir.x, lightDir.y, lightDir.z });
 
     // Compute the diffuse intensity (clamped to zero if the angle is more than 90°).
-
     var diffuseIntensity = dotVec3(triangleNormal, lightDir);
 
     if (diffuseIntensity < 0.0) {
