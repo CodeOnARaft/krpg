@@ -74,9 +74,9 @@ pub fn build(b: *std.Build) !void {
     types_mod.addImport("settings", settings_mod);
     types_mod.addImport("utility", utility_mod);
     types_mod.addImport("map", map_mod);
-    types_mod.addImport("types_mod", types_mod);
+    types_mod.addImport("types", types_mod);
 
-    utility_mod.addImport("types_mod", types_mod);
+    utility_mod.addImport("types", types_mod);
 
     const exe = b.addExecutable(.{ .name = "krpg", .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });
 

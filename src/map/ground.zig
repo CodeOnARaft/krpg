@@ -1,13 +1,14 @@
 const util = @import("utility");
 const raylib = @import("raylib");
 const std = @import("std");
+const types = @import("types");
 
 const maxZTriangles = 25;
 const maxXTriangles = 50;
 var groundScale: f32 = 10.0;
 
 const ground_sector = struct {
-    triangles: [maxXTriangles * maxZTriangles]util.Triangle,
+    triangles: [maxXTriangles * maxZTriangles]types.Triangle,
     gridX: i32 = 0,
     gridZ: i32 = 0,
     startX: i32 = 0,
@@ -19,9 +20,9 @@ const ground_sector = struct {
     }
 
     pub fn new() ground_sector {
-        var triangles: [maxXTriangles * maxZTriangles]util.Triangle = undefined;
+        var triangles: [maxXTriangles * maxZTriangles]types.Triangle = undefined;
         for (0..triangles.len) |i| {
-            triangles[i] = util.Triangle{
+            triangles[i] = types.Triangle{
                 .a = raylib.Vector3.zero(),
                 .b = raylib.Vector3.zero(),
                 .c = raylib.Vector3.zero(),
@@ -116,7 +117,7 @@ pub fn LoadGroundSectorFromFile(x: i32, z: i32) ?ground_sector {
     defer file.close();
 
     const reader = file.reader();
-    var triangles: [maxXTriangles * maxZTriangles]util.Triangle = undefined;
+    var triangles: [maxXTriangles * maxZTriangles]types.Triangle = undefined;
     for (triangles, 0..) |triangle, index| {
         const line = try reader.readLine();
         if (line == null) {
@@ -136,7 +137,7 @@ pub fn LoadGroundSectorFromFile(x: i32, z: i32) ?ground_sector {
         const normal = raylib.Vector3.init(std.fmt.parseFloat(parts[12]), std.fmt.parseFloat(parts[13]), std.fmt.parseFloat(parts[14]));
         const color = raylib.Color.init(std.fmt.parseInt(parts[15]), std.fmt.parseInt(parts[16]), std.fmt.parseInt(parts[17]), 255);
 
-        triangle = util.Triangle{
+        triangle = types.Triangle{
             .a = a,
             .b = b,
             .c = c,
@@ -163,7 +164,7 @@ pub fn SetupGround() void {
     // Implement the ground drawing logic here
     current_ground_sector = ground_sector.new();
 
-    var lastTriangle: util.Triangle = undefined;
+    var lastTriangle: types.Triangle = undefined;
     for (0..maxZTriangles) |y| {
         for (0..maxXTriangles) |x| {
             //const xasF32 = @as(f32, @floatFromInt(x));
@@ -178,7 +179,7 @@ pub fn SetupGround() void {
                 if (y != 0) {
                     oldhf32 = current_ground_sector.triangles[(y - 1) * 50].b.y;
                 }
-                lastTriangle = util.Triangle{
+                lastTriangle = types.Triangle{
                     .a = raylib.Vector3.init(0, oldhf32, (yasF32 * groundScale)),
                     .b = raylib.Vector3.init(0, hf32, (yasF32 * groundScale) + groundScale),
                     .c = raylib.Vector3.init(groundScale, hf32, (yasF32 * groundScale) + groundScale),
@@ -191,7 +192,7 @@ pub fn SetupGround() void {
                     if (y != 0) {
                         oldhf32 = current_ground_sector.triangles[(y - 1) * 50 + x].b.y;
                     }
-                    lastTriangle = util.Triangle{
+                    lastTriangle = types.Triangle{
                         .a = lastTriangle.a,
                         .b = lastTriangle.c,
                         .c = raylib.Vector3.init(lastTriangle.c.x, oldhf32, (yasF32 * groundScale)),
@@ -200,7 +201,7 @@ pub fn SetupGround() void {
                         .color = raylib.Color.green,
                     };
                 } else {
-                    lastTriangle = util.Triangle{
+                    lastTriangle = types.Triangle{
                         .a = lastTriangle.c,
                         .b = lastTriangle.b,
                         .c = raylib.Vector3.init(lastTriangle.c.x + groundScale, hf32, (yasF32 * groundScale) + groundScale),
@@ -219,7 +220,7 @@ pub fn SetupGround() void {
             const intensity = util.calculateLightIntensity(normal, lastTriangle.a, lastTriangle.b, lastTriangle.c, raylib.Vector3.init(20.5, 100, 11.5));
             const color = util.applyIntensity(lastTriangle.color, intensity);
 
-            lastTriangle = util.Triangle{
+            lastTriangle = types.Triangle{
                 .a = lastTriangle.a,
                 .b = lastTriangle.b,
                 .c = lastTriangle.c,

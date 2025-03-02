@@ -3,6 +3,7 @@ const raylib = @import("raylib");
 const settings = @import("settings");
 const std = @import("std");
 const util = @import("utility");
+const types = @import("types");
 
 var consoleOpening = false;
 var consoleOpen = false;

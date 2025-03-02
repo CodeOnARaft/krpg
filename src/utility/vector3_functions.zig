@@ -1,70 +1,71 @@
-const rl = @import("raylib");
+const raylib = @import("raylib");
 const std = @import("std");
+const types = @import("types");
 
-pub fn GetEdgeVector(a: rl.Vector3, b: rl.Vector3) rl.Vector3 {
-    return rl.Vector3.init(b.x - a.x, b.y - a.y, b.z - a.z);
+pub fn GetEdgeVector(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
+    return raylib.Vector3.init(b.x - a.x, b.y - a.y, b.z - a.z);
 }
 
-pub fn CrossProduct(a: rl.Vector3, b: rl.Vector3) rl.Vector3 {
-    return rl.Vector3.init(
+pub fn CrossProduct(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
+    return raylib.Vector3.init(
         a.y * b.z - a.z * b.y,
         a.z * b.x - a.x * b.z,
         a.x * b.y - a.y * b.x,
     );
 }
 
-pub fn FindYFromNormal(normal: rl.Vector3, point: rl.Vector3, x: f32, z: f32) f32 {
+pub fn FindYFromNormal(normal: raylib.Vector3, point: raylib.Vector3, x: f32, z: f32) f32 {
     const top = normal.x * (x - point.x) + normal.z * (z - point.z);
     const bottom = normal.y;
     return point.y - (top / bottom);
 }
 
 /// Adds two vectors.
-pub fn addVec3(a: rl.Vector3, b: rl.Vector3) rl.Vector3 {
-    return rl.Vector3{ .x = a.x + b.x, .y = a.y + b.y, .z = a.z + b.z };
+pub fn addVec3(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
+    return raylib.Vector3{ .x = a.x + b.x, .y = a.y + b.y, .z = a.z + b.z };
 }
 
 /// Subtracts b from a.
-pub fn subVec3(a: rl.Vector3, b: rl.Vector3) rl.Vector3 {
-    return rl.Vector3{ .x = a.x - b.x, .y = a.y - b.y, .z = a.z - b.z };
+pub fn subVec3(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
+    return raylib.Vector3{ .x = a.x - b.x, .y = a.y - b.y, .z = a.z - b.z };
 }
 
 /// Scales a vector by a scalar.
-pub fn scaleVec3(v: rl.Vector3, s: f32) rl.Vector3 {
-    return rl.Vector3{ .x = v.x * s, .y = v.y * s, .z = v.z * s };
+pub fn scaleVec3(v: raylib.Vector3, s: f32) raylib.Vector3 {
+    return raylib.Vector3{ .x = v.x * s, .y = v.y * s, .z = v.z * s };
 }
 
-pub fn triangleCenter(a: rl.Vector3, b: rl.Vector3, c: rl.Vector3) rl.Vector3 {
+pub fn triangleCenter(a: raylib.Vector3, b: raylib.Vector3, c: raylib.Vector3) raylib.Vector3 {
     // The centroid is the average of the vertices.
     return scaleVec3(addVec3(addVec3(a, b), c), 1.0 / 3.0);
 }
-pub fn lengthVec3(v: rl.Vector3) f32 {
+pub fn lengthVec3(v: raylib.Vector3) f32 {
     return std.math.sqrt(dotVec3(v, v));
 }
 
-pub fn dotVec3(a: rl.Vector3, b: rl.Vector3) f32 {
+pub fn dotVec3(a: raylib.Vector3, b: raylib.Vector3) f32 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
 /// Computes the cross product of two vectors.
-pub fn cross(a: rl.Vector3, b: rl.Vector3) rl.Vector3 {
-    return rl.Vector3{
+pub fn cross(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
+    return raylib.Vector3{
         .x = a.y * b.z - a.z * b.y,
         .y = a.z * b.x - a.x * b.z,
         .z = a.x * b.y - a.y * b.x,
     };
 }
 
-pub fn normalizeVec3(v: rl.Vector3) rl.Vector3 {
+pub fn normalizeVec3(v: raylib.Vector3) raylib.Vector3 {
     return scaleVec3(v, 1.0 / lengthVec3(v));
 }
 
 pub fn calculateLightIntensity(
-    triangleNormal: rl.Vector3,
-    a: rl.Vector3,
-    b: rl.Vector3,
-    c: rl.Vector3,
-    sunPosition: rl.Vector3,
+    triangleNormal: raylib.Vector3,
+    a: raylib.Vector3,
+    b: raylib.Vector3,
+    c: raylib.Vector3,
+    sunPosition: raylib.Vector3,
 ) f32 {
     // Compute the center of the triangle.
     const center = triangleCenter(a, b, c);
@@ -87,7 +88,7 @@ pub fn calculateLightIntensity(
     return ambientIntensity;
 }
 
-pub fn applyIntensity(base: rl.Color, intensity: f32) rl.Color {
+pub fn applyIntensity(base: raylib.Color, intensity: f32) raylib.Color {
     // Clamp intensity to the range [0.0, 1.0] if needed.
     //const clampedIntensity: f32 = std.math.clamp(intensity, 0.0, 1.0);
     //std.debug.print("Intensity: {}\n", .{clampedIntensity});
@@ -97,7 +98,7 @@ pub fn applyIntensity(base: rl.Color, intensity: f32) rl.Color {
 
     // Multiply each color channel (converted to f32) by the intensity.
     // We round the result before casting back to u8.
-    const color = rl.Color{
+    const color = raylib.Color{
         .r = @as(u8, @intFromFloat(std.math.round(rf32))),
         .g = @as(u8, @intFromFloat(std.math.round(gf32))),
         .b = @as(u8, @intFromFloat(std.math.round(bf32))),
@@ -106,11 +107,11 @@ pub fn applyIntensity(base: rl.Color, intensity: f32) rl.Color {
 
     return color;
 }
-pub fn TestIfPointInTriangle2D(pp: rl.Vector3, aa: rl.Vector3, bb: rl.Vector3, cc: rl.Vector3) bool {
-    const p = rl.Vector2.init(pp.x, pp.z);
-    const a = rl.Vector2.init(aa.x, aa.z);
-    const b = rl.Vector2.init(bb.x, bb.z);
-    const c = rl.Vector2.init(cc.x, cc.z);
+pub fn TestIfPointInTriangle2D(pp: raylib.Vector3, aa: raylib.Vector3, bb: raylib.Vector3, cc: raylib.Vector3) bool {
+    const p = raylib.Vector2.init(pp.x, pp.z);
+    const a = raylib.Vector2.init(aa.x, aa.z);
+    const b = raylib.Vector2.init(bb.x, bb.z);
+    const c = raylib.Vector2.init(cc.x, cc.z);
 
     const s = a.y * c.x - a.x * c.y + (c.y - a.y) * p.x + (a.x - c.x) * p.y;
     const t = a.x * b.y - a.y * b.x + (a.y - b.y) * p.x + (b.x - a.x) * p.y;
@@ -130,27 +131,16 @@ pub fn TestIfPointInTriangle2D(pp: rl.Vector3, aa: rl.Vector3, bb: rl.Vector3, c
 
 var viewDistance: f32 = 1000.0;
 
-pub fn Vector3sAreEqual(a: rl.Vector3, b: rl.Vector3) bool {
+pub fn Vector3sAreEqual(a: raylib.Vector3, b: raylib.Vector3) bool {
     return a.x == b.x and a.y == b.y and a.z == b.z;
 }
 
-pub fn TriangleIsVisible(triangle: Triangle, pos: rl.Vector3, left: rl.Vector3, right: rl.Vector3) bool {
+pub fn TriangleIsVisible(triangle: types.Triangle, pos: raylib.Vector3, left: raylib.Vector3, right: raylib.Vector3) bool {
     const leftScaled = scaleVec3(left, viewDistance);
     const rightScaled = scaleVec3(right, viewDistance);
 
     return triangleOverlapOrInside(pos, addVec3(pos, leftScaled), addVec3(pos, rightScaled), triangle.a, triangle.b, triangle.c);
-
-    // return TestIfPointInTriangle2D(triangle, pos, addVec3(pos, leftScaled), addVec3(pos, rightScaled));
 }
-
-pub const Triangle = struct {
-    a: rl.Vector3,
-    b: rl.Vector3,
-    c: rl.Vector3,
-    center: rl.Vector3,
-    normal: rl.Vector3,
-    color: rl.Color,
-};
 
 const Vec2 = struct {
     x: f32,
@@ -197,7 +187,7 @@ fn linesIntersect(ea: edgeVec2, eb: edgeVec2) bool {
 }
 
 /// Check if triangle 2 overlaps or is inside triangle 1
-pub fn triangleOverlapOrInside(a1: rl.Vector3, b1: rl.Vector3, c1: rl.Vector3, a2: rl.Vector3, b2: rl.Vector3, c2: rl.Vector3) bool {
+pub fn triangleOverlapOrInside(a1: raylib.Vector3, b1: raylib.Vector3, c1: raylib.Vector3, a2: raylib.Vector3, b2: raylib.Vector3, c2: raylib.Vector3) bool {
     const tri1 = [_]Vec2{
         Vec2{ .x = a1.x, .z = a1.z },
         Vec2{ .x = b1.x, .z = b1.z },
