@@ -3,9 +3,12 @@ const std = @import("std");
 const types = @import("types");
 
 var lastKeyCode: raylib.KeyboardKey = raylib.KeyboardKey.null;
+var lastRead: f32 = 0.0;
 pub fn findKeyReleased() types.CharValue {
-    if (lastKeyCode == raylib.KeyboardKey.null) {
+    lastRead += raylib.getFrameTime();
+    if (lastKeyCode == raylib.KeyboardKey.null or lastRead > 1.0) {
         lastKeyCode = raylib.getKeyPressed();
+        lastRead = 0.0;
     }
 
     if (raylib.isKeyReleased(lastKeyCode)) {
@@ -27,6 +30,8 @@ pub fn findKeyReleased() types.CharValue {
         if (val == 32 or (val >= 32 and val <= 126)) {
             return types.CharValue{ .value = @intCast(val), .isPressed = true };
         }
+    } else {
+        std.debug.print("Key wait: {}\n", .{lastKeyCode});
     }
 
     return types.CharValue{ .value = 0, .isPressed = false };

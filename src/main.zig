@@ -16,7 +16,7 @@ pub fn main() anyerror!void {
 
     raylib.initWindow(settings.screenWidth, settings.screenHeight, "krpg");
     defer raylib.closeWindow(); // Close window and OpenGL context
-    raylib.toggleFullscreen();
+    //raylib.toggleFullscreen();
 
     var camera: *raylib.Camera3D = &util.camera;
 
@@ -27,7 +27,7 @@ pub fn main() anyerror!void {
     var oldCameraPosition = camera.position;
     var showDebug = false;
 
-    mary.texture = try raylib.loadTexture("npc.png");
+    mary.texture = try raylib.loadTexture("resources/npc.png");
     //const marytextureheight: f32 = @floatFromInt(mary.texture.height);
     const maryY = map.GetYValueBasedOnLocation(10, 10);
     mary.position = raylib.Vector3{ .x = 10, .y = maryY, .z = 10.0 };

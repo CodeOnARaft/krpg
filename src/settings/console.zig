@@ -4,6 +4,7 @@ const settings = @import("settings");
 const std = @import("std");
 const util = @import("utility");
 const types = @import("types");
+const map = @import("map");
 
 var consoleOpening = false;
 var consoleOpen = false;
@@ -155,5 +156,39 @@ fn handleCommand(command: []const u8) void {
         std.debug.print("Seconds provided: {s}\n", .{sec});
 
         return;
+    }
+
+    if (command.len >= "LOCATION".len and std.mem.eql(u8, command[0.."LOCATION".len], "LOCATION")) {
+        const sec = command["LOCATION".len..];
+        if (sec.len == 0) {
+            std.debug.print("No seconds provided\n", .{});
+            return;
+        }
+
+        // split command by space with splitSequence
+        var newX: f32 = 0.0;
+        var newZ: f32 = 0.0;
+        var index: u32 = 0;
+        var it = std.mem.splitScalar(u8, command, ' ');
+        while (it.next()) |commandPart| {
+            if (index == 1) {
+                newX = std.fmt.parseFloat(f32, commandPart) catch |err| {
+                    std.debug.print("Error parsing x: {}\n", .{err});
+                    return;
+                };
+            } else if (index == 2) {
+                newZ = std.fmt.parseFloat(f32, commandPart) catch |err| {
+                    std.debug.print("Error parsing z: {}\n", .{err});
+                    return;
+                };
+
+                var camera: *raylib.Camera3D = &util.camera;
+                const newY = map.GetYValueBasedOnLocation(newX, newZ);
+                camera.position = raylib.Vector3{ .x = newX, .y = newY, .z = newZ };
+                camera.target = raylib.Vector3{ .x = newX, .y = newY, .z = newZ + 1.0 };
+            }
+
+            index += 1;
+        }
     }
 }

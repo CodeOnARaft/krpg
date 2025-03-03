@@ -70,6 +70,7 @@ pub fn build(b: *std.Build) !void {
     settings_mod.addImport("settings", settings_mod);
     settings_mod.addImport("utility", utility_mod);
     settings_mod.addImport("types", types_mod);
+    settings_mod.addImport("map", map_mod);
 
     types_mod.addImport("settings", settings_mod);
     types_mod.addImport("utility", utility_mod);
