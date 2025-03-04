@@ -3,45 +3,7 @@ const raylib = @import("raylib");
 const std = @import("std");
 const types = @import("types");
 
-const maxZTriangles = 25;
-const maxXTriangles = 50;
-var groundScale: f32 = 10.0;
-
-const ground_sector = struct {
-    triangles: [maxXTriangles * maxZTriangles]types.Triangle,
-    gridX: i32 = 0,
-    gridZ: i32 = 0,
-    startX: i32 = 0,
-    startZ: i32 = 0,
-
-    pub fn setStart(self: *ground_sector) void {
-        self.startX = self.gridX * maxXTriangles * groundScale;
-        self.startZ = self.gridZ * maxZTriangles * groundScale;
-    }
-
-    pub fn new() ground_sector {
-        var triangles: [maxXTriangles * maxZTriangles]types.Triangle = undefined;
-        for (0..triangles.len) |i| {
-            triangles[i] = types.Triangle{
-                .a = raylib.Vector3.zero(),
-                .b = raylib.Vector3.zero(),
-                .c = raylib.Vector3.zero(),
-                .center = raylib.Vector3.zero(),
-                .normal = raylib.Vector3.zero(),
-                .color = raylib.Color.white,
-            };
-        }
-        return ground_sector{ .triangles = triangles, .startX = 0.0, .startZ = 0.0 };
-    }
-
-    pub fn draw(self: *ground_sector) void {
-        for (self.triangles) |triangle| {
-            raylib.drawTriangle3D(triangle.a, triangle.b, triangle.c, triangle.color);
-        }
-    }
-};
-
-var current_ground_sector: ground_sector = undefined;
+var current_ground_sector: types.GroundSector = undefined;
 
 pub fn GetYValueBasedOnLocation(x: f32, z: f32) f32 {
     const xasF32 = @as(f32, x);
@@ -67,12 +29,12 @@ pub fn UpdateCameraPosition(camera: *raylib.Camera3D) void {
     camera.position.y = y;
 }
 
-pub fn SaveGroundSectorToFile(sector: ground_sector) anyerror!bool {
+pub fn SaveGroundSectorToFile(sector: types.GroundSector) anyerror!bool {
     const cwd = std.fs.cwd();
 
     // get generic allowcator
     const allocator = std.heap.page_allocator;
-    const filename = std.fmt.allocPrint(allocator, "map/ground_sector_{}_{}.gs", .{ sector.startX, sector.startZ }) catch |err| {
+    const filename = std.fmt.allocPrint(allocator, "map/types.GroundSector_{}_{}.gs", .{ sector.startX, sector.startZ }) catch |err| {
         std.debug.print("Error allocating filename: {}\n", .{err});
         return false;
     };
@@ -102,10 +64,10 @@ pub fn SaveGroundSectorToFile(sector: ground_sector) anyerror!bool {
     return true;
 }
 
-pub fn LoadGroundSectorFromFile(x: i32, z: i32) ?ground_sector {
+pub fn LoadGroundSectorFromFile(x: i32, z: i32) ?types.GroundSector {
     const cwd = std.fs.cwd();
     const allocator = std.heap.page_allocator;
-    const filename = std.fmt.allocPrint(allocator, "map/ground_sector_{}_{}.gs", .{ x, z }) catch |err| {
+    const filename = std.fmt.allocPrint(allocator, "map/types.GroundSector_{}_{}.gs", .{ x, z }) catch |err| {
         std.debug.print("Error allocating filename: {}\n", .{err});
         return null;
     };
@@ -117,7 +79,7 @@ pub fn LoadGroundSectorFromFile(x: i32, z: i32) ?ground_sector {
     defer file.close();
 
     const reader = file.reader();
-    var triangles: [maxXTriangles * maxZTriangles]types.Triangle = undefined;
+    var triangles: [types.GroundSectorTriangleSize]types.Triangle = undefined;
     for (triangles, 0..) |triangle, index| {
         const line = try reader.readLine();
         if (line == null) {
@@ -149,10 +111,10 @@ pub fn LoadGroundSectorFromFile(x: i32, z: i32) ?ground_sector {
         triangles[index] = triangle;
     }
 
-    return ground_sector{ .triangles = triangles, .startX = x, .startZ = z };
+    return types.GroundSector{ .triangles = triangles, .startX = x, .startZ = z };
 }
 
-pub fn GenerateSector(x: i32, z: i32) ground_sector {
+pub fn GenerateSector(x: i32, z: i32) types.GroundSector {
     const sector = LoadGroundSectorFromFile(x, z);
     if (sector != null) {
         sector.setStart();
@@ -162,11 +124,11 @@ pub fn GenerateSector(x: i32, z: i32) ground_sector {
 
 pub fn SetupGround() void {
     // Implement the ground drawing logic here
-    current_ground_sector = ground_sector.new();
+    current_ground_sector = types.GroundSector.new();
 
     var lastTriangle: types.Triangle = undefined;
-    for (0..maxZTriangles) |y| {
-        for (0..maxXTriangles) |x| {
+    for (0..types.GroundSectorMaxZTriangles) |y| {
+        for (0..types.GroundSectorMaxZTriangles) |x| {
             //const xasF32 = @as(f32, @floatFromInt(x));
             const yasF32 = @as(f32, @floatFromInt(y));
 
@@ -180,9 +142,9 @@ pub fn SetupGround() void {
                     oldhf32 = current_ground_sector.triangles[(y - 1) * 50].b.y;
                 }
                 lastTriangle = types.Triangle{
-                    .a = raylib.Vector3.init(0, oldhf32, (yasF32 * groundScale)),
-                    .b = raylib.Vector3.init(0, hf32, (yasF32 * groundScale) + groundScale),
-                    .c = raylib.Vector3.init(groundScale, hf32, (yasF32 * groundScale) + groundScale),
+                    .a = raylib.Vector3.init(0, oldhf32, (yasF32 * types.GroundSectorScale)),
+                    .b = raylib.Vector3.init(0, hf32, (yasF32 * types.GroundSectorScale) + types.GroundSectorScale),
+                    .c = raylib.Vector3.init(types.GroundSectorScale, hf32, (yasF32 * types.GroundSectorScale) + types.GroundSectorScale),
                     .center = raylib.Vector3.zero(),
                     .normal = raylib.Vector3.zero(),
                     .color = raylib.Color.green,
@@ -195,7 +157,7 @@ pub fn SetupGround() void {
                     lastTriangle = types.Triangle{
                         .a = lastTriangle.a,
                         .b = lastTriangle.c,
-                        .c = raylib.Vector3.init(lastTriangle.c.x, oldhf32, (yasF32 * groundScale)),
+                        .c = raylib.Vector3.init(lastTriangle.c.x, oldhf32, (yasF32 * types.GroundSectorScale)),
                         .center = raylib.Vector3.zero(),
                         .normal = raylib.Vector3.zero(),
                         .color = raylib.Color.green,
@@ -204,7 +166,7 @@ pub fn SetupGround() void {
                     lastTriangle = types.Triangle{
                         .a = lastTriangle.c,
                         .b = lastTriangle.b,
-                        .c = raylib.Vector3.init(lastTriangle.c.x + groundScale, hf32, (yasF32 * groundScale) + groundScale),
+                        .c = raylib.Vector3.init(lastTriangle.c.x + types.GroundSectorScale, hf32, (yasF32 * types.GroundSectorScale) + types.GroundSectorScale),
                         .center = raylib.Vector3.zero(),
                         .normal = raylib.Vector3.zero(),
                         .color = raylib.Color.green,

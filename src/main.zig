@@ -4,7 +4,7 @@ const util = @import("utility");
 const map = @import("map");
 const settings = @import("settings");
 const types = @import("types");
-const gm = @import("./GameManager.zig");
+const managers = @import("managers");
 
 var mary: types.NPC = types.NPC{
     .name = "Mary",
@@ -16,7 +16,7 @@ pub fn main() anyerror!void {
     defer raylib.closeWindow(); // Close window and OpenGL context
 
     raylib.disableCursor();
-    var gameManager = gm.GameManager{};
+    var gameManager = managers.GameManager{};
     gameManager.initialize();
 
     mary.texture = try raylib.loadTexture("resources/npc.png");

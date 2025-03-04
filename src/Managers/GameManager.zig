@@ -41,10 +41,6 @@ pub const GameManager = struct {
 
         // Draw ground
         map.DrawGround();
-
-        if (self.showDebug) {
-            //   map.DrawGroundDebug();
-        }
     }
 
     pub fn drawUI(self: *GameManager) void {

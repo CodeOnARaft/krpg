@@ -48,8 +48,12 @@ pub fn build(b: *std.Build) !void {
         .root_source_file = b.path("src/settings/_settings.zig"),
     });
 
-    const types_mod = b.addModule("settings", .{
+    const types_mod = b.addModule("types", .{
         .root_source_file = b.path("src/types/_types.zig"),
+    });
+
+    const managers_mod = b.addModule("managers", .{
+        .root_source_file = b.path("src/Managers/_managers.zig"),
     });
 
     // add imports
@@ -57,11 +61,13 @@ pub fn build(b: *std.Build) !void {
     utility_mod.addImport("raylib", raylib);
     settings_mod.addImport("raylib", raylib);
     types_mod.addImport("raylib", raylib);
+    managers_mod.addImport("raylib", raylib);
 
     map_mod.addImport("raygui", raygui);
     utility_mod.addImport("raygui", raygui);
     settings_mod.addImport("raygui", raygui);
     types_mod.addImport("raygui", raygui);
+    managers_mod.addImport("raygui", raygui);
 
     map_mod.addImport("utility", utility_mod);
     map_mod.addImport("settings", settings_mod);
@@ -71,6 +77,7 @@ pub fn build(b: *std.Build) !void {
     settings_mod.addImport("utility", utility_mod);
     settings_mod.addImport("types", types_mod);
     settings_mod.addImport("map", map_mod);
+    settings_mod.addImport("managers", managers_mod);
 
     types_mod.addImport("settings", settings_mod);
     types_mod.addImport("utility", utility_mod);
@@ -78,6 +85,12 @@ pub fn build(b: *std.Build) !void {
     types_mod.addImport("types", types_mod);
 
     utility_mod.addImport("types", types_mod);
+    utility_mod.addImport("settings", settings_mod);
+
+    managers_mod.addImport("types", types_mod);
+    managers_mod.addImport("settings", settings_mod);
+    managers_mod.addImport("utility", utility_mod);
+    managers_mod.addImport("map", map_mod);
 
     const exe = b.addExecutable(.{ .name = "krpg", .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });
 
@@ -89,6 +102,7 @@ pub fn build(b: *std.Build) !void {
     exe.root_module.addImport("utility", utility_mod);
     exe.root_module.addImport("settings", settings_mod);
     exe.root_module.addImport("types", types_mod);
+    exe.root_module.addImport("managers", managers_mod);
 
     const run_cmd = b.addRunArtifact(exe);
     const run_step = b.step("run", "Run krpg");
