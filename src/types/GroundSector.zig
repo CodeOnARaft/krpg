@@ -29,7 +29,7 @@ pub const GroundSector = struct {
         return GroundSector{ .triangles = triangles, .startX = 0.0, .startZ = 0.0 };
     }
 
-    pub fn generateSector(gridX: u32, gridZ: u32) GroundSector {
+    pub fn generateSector(gridX: u32, gridZ: u32, flat: bool) GroundSector {
         const xStart = @as(f32, @floatFromInt(gridX)) * GroundSectorMaxXTriangles * GroundSectorScale;
         const zStart = @as(f32, @floatFromInt(gridZ)) * GroundSectorMaxZTriangles * GroundSectorScale;
 
@@ -47,7 +47,10 @@ pub const GroundSector = struct {
                 const zAsF32 = @as(f32, @floatFromInt(z));
 
                 // Pick a random height between 0 and 3.5
-                const randomNewHeight = @as(f32, @floatFromInt(raylib.getRandomValue(0, 35))) / 10.0;
+                var randomNewHeight: f32 = 0;
+                if (!flat) {
+                    randomNewHeight = @as(f32, @floatFromInt(raylib.getRandomValue(0, 35))) / 10.0;
+                }
 
                 // If the vector point is already generated in a prev triangle, use that height
                 var oldRandomHeight = randomNewHeight;

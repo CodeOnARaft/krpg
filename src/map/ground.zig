@@ -124,7 +124,7 @@ pub fn GenerateSector(x: i32, z: i32) types.GroundSector {
 
 pub fn SetupGround() void {
     // Implement the ground drawing logic here
-    current_ground_sector = types.GroundSector.generateSector(0, 0);
+    current_ground_sector = types.GroundSector.generateSector(0, 0, false);
 
     const dd = SaveGroundSectorToFile(current_ground_sector) catch |err| {
         std.debug.print("Error saving ground sector to file: {}\n", .{err});
