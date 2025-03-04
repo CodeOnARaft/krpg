@@ -12,7 +12,7 @@ pub fn findKeyReleased() types.CharValue {
     }
 
     if (raylib.isKeyReleased(lastKeyCode)) {
-        std.debug.print("Key released: {}\n", .{lastKeyCode});
+        //  std.debug.print("Key released: {}\n", .{lastKeyCode});
 
         if (lastKeyCode == raylib.KeyboardKey.backspace) {
             lastKeyCode = raylib.KeyboardKey.null;
@@ -31,7 +31,7 @@ pub fn findKeyReleased() types.CharValue {
             return types.CharValue{ .value = @intCast(val), .isPressed = true };
         }
     } else {
-        std.debug.print("Key wait: {}\n", .{lastKeyCode});
+        // std.debug.print("Key wait: {}\n", .{lastKeyCode});
     }
 
     return types.CharValue{ .value = 0, .isPressed = false };
