@@ -10,7 +10,7 @@ pub fn main() anyerror!void {
     var gameManager = managers.GameManager{};
     try gameManager.initialize();
 
-    while (!raylib.windowShouldClose()) {
+    while (!raylib.windowShouldClose() or gameManager.closeWindow) {
         gameManager.update();
 
         raylib.beginDrawing();
@@ -18,11 +18,6 @@ pub fn main() anyerror!void {
 
         raylib.clearBackground(raylib.Color.black);
 
-        {
-            // 3D World
-            gameManager.draw();
-        }
-
-        gameManager.drawUI();
+        gameManager.draw();
     }
 }

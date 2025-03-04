@@ -183,7 +183,7 @@ fn handleCommand(command: []const u8) void {
                 };
 
                 var camera: *raylib.Camera3D = &util.camera;
-                const newY = map.GetYValueBasedOnLocation(newX, newZ);
+                const newY = 0.0; //map.GetYValueBasedOnLocation(newX, newZ);
                 camera.position = raylib.Vector3{ .x = newX, .y = newY, .z = newZ };
                 camera.target = raylib.Vector3{ .x = newX, .y = newY, .z = newZ + 1.0 };
             }

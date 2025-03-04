@@ -113,4 +113,22 @@ pub const GroundSector = struct {
             raylib.drawTriangle3D(triangle.a, triangle.b, triangle.c, triangle.color);
         }
     }
+
+    pub fn GetYValueBasedOnLocation(self: *GroundSector, x: f32, z: f32) f32 {
+        const xasF32 = @as(f32, x);
+        const zasF32 = @as(f32, z);
+        const v3 = raylib.Vector3.init(xasF32, 0, zasF32);
+
+        var y: f32 = 0.0;
+        for (self.triangles) |triangle| {
+            if (zasF32 >= triangle.a.z and (zasF32 <= triangle.c.z or zasF32 < triangle.b.z)) {
+                if (util.TestIfPointInTriangle2D(v3, triangle.a, triangle.b, triangle.c)) {
+                    y = util.FindYFromNormal(triangle.normal, triangle.a, v3.x, v3.z) + 2;
+
+                    break;
+                }
+            }
+        }
+        return y;
+    }
 };

@@ -2,39 +2,14 @@ const util = @import("utility");
 const raylib = @import("raylib");
 const std = @import("std");
 const types = @import("types");
+const ArrayList = std.ArrayList;
 
-var current_ground_sector: types.GroundSector = undefined;
-
-pub fn GetYValueBasedOnLocation(x: f32, z: f32) f32 {
-    const xasF32 = @as(f32, x);
-    const zasF32 = @as(f32, z);
-    const v3 = raylib.Vector3.init(xasF32, 0, zasF32);
-
-    var y: f32 = 0.0;
-    for (current_ground_sector.triangles) |triangle| {
-        if (zasF32 >= triangle.a.z and (zasF32 <= triangle.c.z or zasF32 < triangle.b.z)) {
-            if (util.TestIfPointInTriangle2D(v3, triangle.a, triangle.b, triangle.c)) {
-                y = util.FindYFromNormal(triangle.normal, triangle.a, v3.x, v3.z) + 2;
-
-                break;
-            }
-        }
-    }
-    return y;
-}
-
-pub fn UpdateCameraPosition(camera: *raylib.Camera3D) void {
-    const y = GetYValueBasedOnLocation(camera.position.x, camera.position.z);
-    camera.target.y = camera.target.y + (y - camera.position.y);
-    camera.position.y = y;
-}
-
-pub fn SaveGroundSectorToFile(sector: types.GroundSector) anyerror!bool {
+pub fn SaveGroundSectorToFile(scene_name: []u8, sector: types.GroundSector) anyerror!bool {
     const cwd = std.fs.cwd();
 
     // get generic allowcator
     const allocator = std.heap.page_allocator;
-    const filename = std.fmt.allocPrint(allocator, "map/types.GroundSector_{}_{}.gs", .{ sector.startX, sector.startZ }) catch |err| {
+    const filename = std.fmt.allocPrint(allocator, "map/{s}_{}_{}.gs", .{ scene_name.sector.startX, sector.startZ }) catch |err| {
         std.debug.print("Error allocating filename: {}\n", .{err});
         return false;
     };
@@ -64,42 +39,69 @@ pub fn SaveGroundSectorToFile(sector: types.GroundSector) anyerror!bool {
     return true;
 }
 
-pub fn LoadGroundSectorFromFile(x: i32, z: i32) ?types.GroundSector {
+pub fn LoadGroundSectorFromFile(scene_name: []u8, x: i32, z: i32) !?types.GroundSector {
     const cwd = std.fs.cwd();
     const allocator = std.heap.page_allocator;
-    const filename = std.fmt.allocPrint(allocator, "map/types.GroundSector_{}_{}.gs", .{ x, z }) catch |err| {
+    const filename = std.fmt.allocPrint(allocator, "map/{s}_{}_{}.gs", .{ scene_name, x, z }) catch |err| {
         std.debug.print("Error allocating filename: {}\n", .{err});
         return null;
     };
 
-    const file = cwd.openFile(filename, .{ .read = true }) catch |err| {
+    const file = cwd.openFile(filename, std.fs.File.OpenFlags{}) catch |err| {
         std.debug.print("Error opening file: {}\n", .{err});
         return null;
     };
     defer file.close();
 
-    const reader = file.reader();
     var triangles: [types.GroundSectorTriangleSize]types.Triangle = undefined;
-    for (triangles, 0..) |triangle, index| {
-        const line = try reader.readLine();
-        if (line == null) {
-            break;
+
+    var buf_reader = std.io.bufferedReader(file.reader());
+    var in_stream = buf_reader.reader();
+    var buf: [1024]u8 = undefined;
+    var index: usize = 0;
+    while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
+        var parts: ArrayList([]u8) = ArrayList([]u8).init(std.heap.page_allocator);
+        var it = std.mem.splitScalar(u8, line, ',');
+
+        while (it.next()) |commandPart| {
+            const partU8 = try util.constU8toU8(commandPart);
+            try parts.append(partU8);
         }
 
-        const parts = line.split(",");
-        if (parts.len != 18) {
-            std.debug.print("Error reading line from file: {}\n", .{line});
-            return null;
-        }
+        const p0: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[0]));
+        const p1: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[1]));
+        const p2: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[2]));
+        const p3: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[3]));
+        const p4: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[4]));
+        const p5: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[5]));
+        const p6: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[6]));
+        const p7: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[7]));
+        const p8: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[8]));
+        const p9: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[9]));
+        const p10: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[10]));
+        const p11: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[11]));
+        const p12: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[12]));
+        const p13: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[13]));
+        const p14: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[14]));
+        const p15: u8 = try std.fmt.parseInt(u8, util.trimSpaceEOL(parts.items[15]), 10);
+        const p16: u8 = try std.fmt.parseInt(u8, util.trimSpaceEOL(parts.items[16]), 10);
+        const p17: u8 = try std.fmt.parseInt(u8, util.trimSpaceEOL(parts.items[17]), 10);
 
-        const a = raylib.Vector3.init(std.fmt.parseFloat(parts[0]), std.fmt.parseFloat(parts[1]), std.fmt.parseFloat(parts[2]));
-        const b = raylib.Vector3.init(std.fmt.parseFloat(parts[3]), std.fmt.parseFloat(parts[4]), std.fmt.parseFloat(parts[5]));
-        const c = raylib.Vector3.init(std.fmt.parseFloat(parts[6]), std.fmt.parseFloat(parts[7]), std.fmt.parseFloat(parts[8]));
-        const center = raylib.Vector3.init(std.fmt.parseFloat(parts[9]), std.fmt.parseFloat(parts[10]), std.fmt.parseFloat(parts[11]));
-        const normal = raylib.Vector3.init(std.fmt.parseFloat(parts[12]), std.fmt.parseFloat(parts[13]), std.fmt.parseFloat(parts[14]));
-        const color = raylib.Color.init(std.fmt.parseInt(parts[15]), std.fmt.parseInt(parts[16]), std.fmt.parseInt(parts[17]), 255);
+        const a = raylib.Vector3.init(p0, p1, p2);
+        const b = raylib.Vector3.init(p3, p4, p5);
+        const c = raylib.Vector3.init(p6, p7, p8);
+        const center = raylib.Vector3.init(p9, p10, p11);
+        const normal = raylib.Vector3.init(p12, p13, p14);
+        const color = raylib.Color.init(p15, p16, p17, 255);
 
-        triangle = types.Triangle{
+        // const a = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[0]), std.fmt.parseFloat(f32, parts.items[1]), std.fmt.parseFloat(f32, parts.items[2]));
+        // const b = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[3]), std.fmt.parseFloat(f32, parts.items[4]), std.fmt.parseFloat(f32, parts.items[5]));
+        // const c = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[6]), std.fmt.parseFloat(f32, parts.items[7]), std.fmt.parseFloat(f32, parts.items[8]));
+        // const center = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[9]), std.fmt.parseFloat(f32, parts.items[10]), std.fmt.parseFloat(f32, parts.items[11]));
+        // const normal = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[12]), std.fmt.parseFloat(f32, parts.items[13]), std.fmt.parseFloat(f32, parts.items[14]));
+        // const color = raylib.Color.init(std.fmt.parseInt(parts.items[15]), std.fmt.parseInt(parts.items[16]), std.fmt.parseInt(parts.items[17]), 255);
+
+        const triangle = types.Triangle{
             .a = a,
             .b = b,
             .c = c,
@@ -109,9 +111,12 @@ pub fn LoadGroundSectorFromFile(x: i32, z: i32) ?types.GroundSector {
         };
 
         triangles[index] = triangle;
+        index += 1;
     }
 
-    return types.GroundSector{ .triangles = triangles, .startX = x, .startZ = z };
+    var new_sec = types.GroundSector{ .triangles = triangles, .gridX = @intCast(x), .gridZ = @intCast(z) };
+    new_sec.setStart();
+    return new_sec;
 }
 
 pub fn GenerateSector(x: i32, z: i32) types.GroundSector {
@@ -122,18 +127,18 @@ pub fn GenerateSector(x: i32, z: i32) types.GroundSector {
     }
 }
 
-pub fn SetupGround() void {
-    // Implement the ground drawing logic here
-    current_ground_sector = types.GroundSector.generateSector(0, 0, false);
+// pub fn SetupGround() void {
+//     // Implement the ground drawing logic here
+//     current_ground_sector = types.GroundSector.generateSector(0, 0, false);
 
-    const dd = SaveGroundSectorToFile(current_ground_sector) catch |err| {
-        std.debug.print("Error saving ground sector to file: {}\n", .{err});
-        return;
-    };
+//     const dd = SaveGroundSectorToFile(current_ground_sector) catch |err| {
+//         std.debug.print("Error saving ground sector to file: {}\n", .{err});
+//         return;
+//     };
 
-    std.debug.print("Ground sector saved to file: {}\n", .{dd});
-}
+//     std.debug.print("Ground sector saved to file: {}\n", .{dd});
+// }
 
-pub fn DrawGround() void {
-    current_ground_sector.draw();
-}
+// pub fn DrawGround() void {
+//     current_ground_sector.draw();
+// }
