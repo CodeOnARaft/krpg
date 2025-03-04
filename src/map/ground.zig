@@ -124,76 +124,7 @@ pub fn GenerateSector(x: i32, z: i32) types.GroundSector {
 
 pub fn SetupGround() void {
     // Implement the ground drawing logic here
-    current_ground_sector = types.GroundSector.new();
-
-    var lastTriangle: types.Triangle = undefined;
-    for (0..types.GroundSectorMaxZTriangles) |y| {
-        for (0..types.GroundSectorMaxZTriangles) |x| {
-            //const xasF32 = @as(f32, @floatFromInt(x));
-            const yasF32 = @as(f32, @floatFromInt(y));
-
-            // random value between 0 and 2
-            const h = raylib.getRandomValue(0, 35);
-            // h as f32
-            const hf32 = @as(f32, @floatFromInt(h)) / 10.0;
-            var oldhf32 = hf32;
-            if (x == 0) {
-                if (y != 0) {
-                    oldhf32 = current_ground_sector.triangles[(y - 1) * 50].b.y;
-                }
-                lastTriangle = types.Triangle{
-                    .a = raylib.Vector3.init(0, oldhf32, (yasF32 * types.GroundSectorScale)),
-                    .b = raylib.Vector3.init(0, hf32, (yasF32 * types.GroundSectorScale) + types.GroundSectorScale),
-                    .c = raylib.Vector3.init(types.GroundSectorScale, hf32, (yasF32 * types.GroundSectorScale) + types.GroundSectorScale),
-                    .center = raylib.Vector3.zero(),
-                    .normal = raylib.Vector3.zero(),
-                    .color = raylib.Color.green,
-                };
-            } else {
-                if (x % 2 == 1) {
-                    if (y != 0) {
-                        oldhf32 = current_ground_sector.triangles[(y - 1) * 50 + x].b.y;
-                    }
-                    lastTriangle = types.Triangle{
-                        .a = lastTriangle.a,
-                        .b = lastTriangle.c,
-                        .c = raylib.Vector3.init(lastTriangle.c.x, oldhf32, (yasF32 * types.GroundSectorScale)),
-                        .center = raylib.Vector3.zero(),
-                        .normal = raylib.Vector3.zero(),
-                        .color = raylib.Color.green,
-                    };
-                } else {
-                    lastTriangle = types.Triangle{
-                        .a = lastTriangle.c,
-                        .b = lastTriangle.b,
-                        .c = raylib.Vector3.init(lastTriangle.c.x + types.GroundSectorScale, hf32, (yasF32 * types.GroundSectorScale) + types.GroundSectorScale),
-                        .center = raylib.Vector3.zero(),
-                        .normal = raylib.Vector3.zero(),
-                        .color = raylib.Color.green,
-                    };
-                }
-            }
-
-            const edge1 = util.GetEdgeVector(lastTriangle.a, lastTriangle.b);
-            const edge2 = util.GetEdgeVector(lastTriangle.a, lastTriangle.c);
-            const normal = util.CrossProduct(edge1, edge2);
-            //groundNormals[y * 50 + x] = normal;
-
-            const intensity = util.calculateLightIntensity(normal, lastTriangle.a, lastTriangle.b, lastTriangle.c, raylib.Vector3.init(20.5, 100, 11.5));
-            const color = util.applyIntensity(lastTriangle.color, intensity);
-
-            lastTriangle = types.Triangle{
-                .a = lastTriangle.a,
-                .b = lastTriangle.b,
-                .c = lastTriangle.c,
-                .center = util.triangleCenter(lastTriangle.a, lastTriangle.b, lastTriangle.c),
-                .normal = normal,
-                .color = color,
-            };
-
-            current_ground_sector.triangles[y * 50 + x] = lastTriangle;
-        }
-    }
+    current_ground_sector = types.GroundSector.generateSector(0, 0);
 
     const dd = SaveGroundSectorToFile(current_ground_sector) catch |err| {
         std.debug.print("Error saving ground sector to file: {}\n", .{err});
