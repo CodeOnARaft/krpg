@@ -14,7 +14,7 @@ pub const GroundSector = struct {
     startX: f32 = 0,
     startZ: f32 = 0,
 
-    pub fn new() GroundSector {
+    pub fn new(gridX: u32, gridZ: u32) GroundSector {
         var triangles: [GroundSectorTriangleSize]types.Triangle = undefined;
         for (0..triangles.len) |i| {
             triangles[i] = types.Triangle{
@@ -26,18 +26,16 @@ pub const GroundSector = struct {
                 .color = raylib.Color.white,
             };
         }
-        return GroundSector{ .triangles = triangles, .startX = 0.0, .startZ = 0.0 };
+        var gs = GroundSector{ .triangles = triangles, .gridX = gridX, .gridZ = gridZ };
+        gs.setStart();
+        return gs;
     }
 
     pub fn generateSector(gridX: u32, gridZ: u32, flat: bool) GroundSector {
-        const xStart = @as(f32, @floatFromInt(gridX)) * GroundSectorMaxXTriangles * GroundSectorScale;
-        const zStart = @as(f32, @floatFromInt(gridZ)) * GroundSectorMaxZTriangles * GroundSectorScale;
+        var current_ground_sector = GroundSector.new(gridX, gridZ);
 
-        var current_ground_sector = GroundSector.new();
-        current_ground_sector.gridX = gridX;
-        current_ground_sector.gridZ = gridZ;
-        current_ground_sector.startX = xStart;
-        current_ground_sector.startZ = zStart;
+        const xStart = current_ground_sector.startX;
+        const zStart = current_ground_sector.startZ;
 
         var lastTriangle: types.Triangle = undefined;
         for (0..types.GroundSectorMaxZTriangles) |z| {
@@ -106,9 +104,10 @@ pub const GroundSector = struct {
     }
 
     pub fn setStart(self: *GroundSector) void {
-        self.startX = self.gridX * GroundSectorMaxXTriangles * GroundSectorScale;
-        self.startZ = self.gridZ * GroundSectorMaxZTriangles * GroundSectorScale;
+        self.startX = @as(f32, @floatFromInt(self.gridX)) * GroundSectorMaxXTriangles * GroundSectorScale;
+        self.startZ = @as(f32, @floatFromInt(self.gridZ)) * GroundSectorMaxZTriangles * GroundSectorScale;
     }
+
     pub fn draw(self: *GroundSector) void {
         for (self.triangles) |triangle| {
             raylib.drawTriangle3D(triangle.a, triangle.b, triangle.c, triangle.color);
