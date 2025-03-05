@@ -83,6 +83,7 @@ pub fn build(b: *std.Build) !void {
     types_mod.addImport("utility", utility_mod);
     types_mod.addImport("map", map_mod);
     types_mod.addImport("types", types_mod);
+    types_mod.addImport("managers", managers_mod);
 
     utility_mod.addImport("types", types_mod);
     utility_mod.addImport("settings", settings_mod);

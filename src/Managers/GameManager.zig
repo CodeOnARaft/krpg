@@ -19,8 +19,11 @@ pub const GameManager = struct {
     npcs: ArrayList(types.NPC) = ArrayList(types.NPC).init(std.heap.page_allocator),
     currentScene: types.Scene = undefined,
     closeWindow: bool = false,
+    console: types.Console = undefined,
 
     pub fn initialize(self: *GameManager) !void {
+        self.console = types.Console{};
+        self.console.init(self);
         self.camera = &util.camera;
         //map.SetupGround();
         //map.UpdateCameraPosition(self.camera);
@@ -51,6 +54,10 @@ pub const GameManager = struct {
 
         if (raylib.isKeyReleased(raylib.KeyboardKey.f5)) {
             self.showDebug = !self.showDebug;
+        }
+
+        if (raylib.isKeyReleased(raylib.KeyboardKey.grave)) {
+            self.console.consoleToggle();
         }
 
         settings.gameSettings.update();
@@ -86,12 +93,14 @@ pub const GameManager = struct {
         if (self.closeWindow) {
             return;
         }
-        settings.drawConsole();
+
         if (self.showDebug) {
             raylib.drawRectangle(10, 10, 220, 70, raylib.Color.sky_blue.fade(0.5));
             raylib.drawRectangleLines(10, 10, 220, 70, raylib.Color.blue);
 
             raylib.drawFPS(5, 5);
         }
+
+        self.console.drawConsole();
     }
 };

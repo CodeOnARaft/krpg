@@ -13,10 +13,6 @@ const Settings = struct {
     consoleOpen: bool = false,
 
     pub fn update(self: *Settings) void {
-        if (raylib.isKeyReleased(raylib.KeyboardKey.grave)) {
-            settings.consoleToggle();
-        }
-
         if (raylib.isKeyReleased(raylib.KeyboardKey.p)) {
             self.paused = !self.paused;
         }
