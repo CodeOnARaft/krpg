@@ -1,6 +1,7 @@
 const std = @import("std");
 const v3 = @import("vector3_functions.zig");
 const rl = @import("raylib");
+const settings = @import("settings");
 
 const cameraDefaultY = 3.0;
 
@@ -47,4 +48,23 @@ pub fn rotateXZRight(v: rl.Vector3) rl.Vector3 {
         .y = v.y, // Y remains unchanged.
         .z = v.x * sin_of_fov + v.z * cos_of_fov,
     };
+}
+
+pub fn getViewingRay() rl.Ray {
+    const direction = rl.Vector3{
+        .x = camera.target.x - camera.position.x,
+        .y = camera.target.y - camera.position.y,
+        .z = camera.target.z - camera.position.z,
+    };
+
+    const ray = rl.Ray{
+        .position = camera.position,
+        .direction = rl.Vector3{
+            .x = direction.x * settings.interactDistance,
+            .y = direction.y * settings.interactDistance,
+            .z = direction.z * settings.interactDistance,
+        },
+    };
+
+    return ray;
 }

@@ -1,6 +1,8 @@
 const types = @import("types");
 const std = @import("std");
 const raylib = @import("raylib");
+const util = @import("utility");
+const settings = @import("settings");
 
 pub const TriggerTypes = enum {
     Test,
@@ -10,10 +12,33 @@ pub const TriggerTypes = enum {
 
 pub const Trigger = struct {
     type: TriggerTypes = TriggerTypes.Test,
-    boundingBox: types.Cube = undefined,
+    boundingBox: raylib.BoundingBox = undefined,
+    position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
+    size: f32 = 1.5,
     description: []const u8 = "",
 
+    pub fn setPosition(self: *Trigger, x: f32, y: f32, z: f32) void {
+        self.position = raylib.Vector3{ .x = x, .y = y, .z = z };
+        self.boundingBox = raylib.BoundingBox{
+            .min = raylib.Vector3{ .x = x - self.size, .y = y - self.size, .z = z - self.size },
+            .max = raylib.Vector3{ .x = x + self.size, .y = y + self.size, .z = z + self.size },
+        };
+    }
+
     pub fn draw(self: *Trigger) void {
-        raylib.drawCubeWires(self.boundingBox.position, self.boundingBox.width, self.boundingBox.height, self.boundingBox.depth, raylib.Color.blue);
+        raylib.drawBoundingBox(self.boundingBox, raylib.Color.blue);
+    }
+
+    pub fn checkCollision(self: *Trigger, ray: raylib.Ray) bool {
+        var hit = false;
+
+        const col: raylib.RayCollision = raylib.getRayCollisionBox(ray, self.boundingBox);
+        if (col.hit) {
+            if (util.distanceVector3(self.position, util.camera.position) < settings.interactDistance) {
+                hit = true;
+            }
+        }
+
+        return hit;
     }
 };

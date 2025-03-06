@@ -6,17 +6,9 @@ const map = @import("map");
 const settings = @import("settings");
 const types = @import("types");
 
-var mary: types.NPC = types.NPC{
-    .name = "Mary",
-    .position = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
-    .active = true,
-};
-
 pub const GameManager = struct {
-    showDebug: bool = false,
     camera: *raylib.Camera3D = undefined,
     oldCameraPosition: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
-    npcs: ArrayList(types.NPC) = ArrayList(types.NPC).init(std.heap.page_allocator),
     currentScene: types.Scene = undefined,
     closeWindow: bool = false,
     console: types.Console = undefined,
@@ -38,11 +30,6 @@ pub const GameManager = struct {
         self.currentScene = loadedScene.?;
 
         self.currentScene.UpdateCameraPosition(self.camera);
-        mary.texture = try raylib.loadTexture("resources/npc.png");
-        //const marytextureheight: f32 = @floatFromInt(mary.texture.height);
-        const maryY = self.currentScene.GetYValueBasedOnLocation(10, 10);
-        mary.setPosition(10, maryY, 10);
-        try self.npcs.append(mary);
     }
 
     pub fn update(self: *GameManager) void {
@@ -51,7 +38,7 @@ pub const GameManager = struct {
         }
 
         if (raylib.isKeyReleased(raylib.KeyboardKey.f5)) {
-            self.showDebug = !self.showDebug;
+            settings.gameSettings.debug = !settings.gameSettings.debug;
         }
 
         if (raylib.isKeyReleased(raylib.KeyboardKey.grave)) {
@@ -81,12 +68,7 @@ pub const GameManager = struct {
             defer self.camera.end();
 
             // Draw ground
-            self.currentScene.draw(self.camera);
-
-            var i: usize = 0;
-            while (i < self.npcs.items.len) : (i += 1) {
-                self.npcs.items[i].draw(util.camera, self.showDebug);
-            }
+            self.currentScene.draw();
         }
 
         self.drawUI();
@@ -97,11 +79,13 @@ pub const GameManager = struct {
             return;
         }
 
-        if (self.showDebug) {
-            raylib.drawRectangle(10, 10, 220, 70, raylib.Color.sky_blue.fade(0.5));
-            raylib.drawRectangleLines(10, 10, 220, 70, raylib.Color.blue);
+        self.currentScene.drawUI();
 
-            raylib.drawFPS(5, 5);
+        if (settings.gameSettings.debug) {
+            // raylib.drawRectangle(10, 10, 220, 70, raylib.Color.sky_blue.fade(0.5));
+            // raylib.drawRectangleLines(10, 10, 220, 70, raylib.Color.blue);
+
+            // raylib.drawFPS(5, 5);
         }
 
         self.console.drawConsole();

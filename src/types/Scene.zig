@@ -99,6 +99,17 @@ pub const Scene = struct {
             }
         }
 
+        var mary: types.NPC = types.NPC{
+            .name = "Mary",
+            .position = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
+            .active = true,
+        };
+        mary.texture = try raylib.loadTexture("resources/npc.png");
+        //const marytextureheight: f32 = @floatFromInt(mary.texture.height);
+        const maryY = scene.GetYValueBasedOnLocation(10, 10);
+        mary.setPosition(10, maryY, 10);
+        try scene.loadedNPCs.append(mary);
+
         return scene;
     }
 
@@ -116,13 +127,25 @@ pub const Scene = struct {
         return sector.GetYValueBasedOnLocation(x, z);
     }
 
-    pub fn draw(self: *Scene, camera: *raylib.Camera3D) void {
+    pub fn draw(self: *Scene) void {
         for (0..self.loadedSectors.items.len) |index| {
             self.loadedSectors.items[index].draw();
         }
 
-        for (self.loadedNPCs.items) |npc| {
-            raylib.drawBillboard(camera.*, npc.texture, npc.position, 0.5, raylib.Color.white);
+        var i: usize = 0;
+        while (i < self.loadedNPCs.items.len) : (i += 1) {
+            self.loadedNPCs.items[i].draw(util.camera, true);
+        }
+    }
+
+    pub fn drawUI(self: *Scene) void {
+        var i: usize = 0;
+        while (i < self.loadedNPCs.items.len) : (i += 1) {
+            if (self.loadedNPCs.items[i].trigger.checkCollision(util.getViewingRay())) {
+                raylib.drawRectangle(10, 10, 220, 70, raylib.Color.sky_blue.fade(0.5));
+                raylib.drawRectangleLines(10, 10, 220, 70, raylib.Color.blue);
+                raylib.drawText("NPC: Mary", 20, 20, 10, raylib.Color.dark_blue);
+            }
         }
     }
 };
