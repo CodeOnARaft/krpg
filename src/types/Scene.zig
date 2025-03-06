@@ -110,6 +110,12 @@ pub const Scene = struct {
         camera.position.y = y;
     }
 
+    pub fn GetYValueBasedOnLocation(self: *Scene, x: f32, z: f32) f32 {
+        var sector: types.GroundSector = self.loadedSectors.items[0]; // TODO figure out the sector
+
+        return sector.GetYValueBasedOnLocation(x, z);
+    }
+
     pub fn draw(self: *Scene, camera: *raylib.Camera3D) void {
         for (0..self.loadedSectors.items.len) |index| {
             self.loadedSectors.items[index].draw();

@@ -118,27 +118,3 @@ pub fn LoadGroundSectorFromFile(scene_name: []u8, x: i32, z: i32) !?types.Ground
     new_sec.setStart();
     return new_sec;
 }
-
-pub fn GenerateSector(x: i32, z: i32) types.GroundSector {
-    const sector = LoadGroundSectorFromFile(x, z);
-    if (sector != null) {
-        sector.setStart();
-        return sector;
-    }
-}
-
-// pub fn SetupGround() void {
-//     // Implement the ground drawing logic here
-//     current_ground_sector = types.GroundSector.generateSector(0, 0, false);
-
-//     const dd = SaveGroundSectorToFile(current_ground_sector) catch |err| {
-//         std.debug.print("Error saving ground sector to file: {}\n", .{err});
-//         return;
-//     };
-
-//     std.debug.print("Ground sector saved to file: {}\n", .{dd});
-// }
-
-// pub fn DrawGround() void {
-//     current_ground_sector.draw();
-// }

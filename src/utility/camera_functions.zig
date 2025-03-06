@@ -20,8 +20,8 @@ pub fn trimSpaceEOL(inString: []const u8) []u8 {
 }
 
 pub var camera = rl.Camera3D{
-    .position = rl.Vector3.init(50, cameraDefaultY, 50),
-    .target = rl.Vector3.init(100, cameraDefaultY, 100),
+    .position = rl.Vector3.init(20, cameraDefaultY, 20),
+    .target = rl.Vector3.init(30, cameraDefaultY, 30),
     .up = rl.Vector3.init(0, 1, 0),
     .fovy = 60,
     .projection = .perspective,

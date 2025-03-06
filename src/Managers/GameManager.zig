@@ -25,8 +25,7 @@ pub const GameManager = struct {
         self.console = types.Console{};
         self.console.init(self);
         self.camera = &util.camera;
-        //map.SetupGround();
-        //map.UpdateCameraPosition(self.camera);
+
         self.oldCameraPosition = self.camera.position;
 
         const basicScene = try util.constU8toU8("overworld");
@@ -39,12 +38,11 @@ pub const GameManager = struct {
         self.currentScene = loadedScene.?;
 
         self.currentScene.UpdateCameraPosition(self.camera);
-        // mary.texture = try raylib.loadTexture("resources/npc.png");
-        // //const marytextureheight: f32 = @floatFromInt(mary.texture.height);
-        // const maryY = map.GetYValueBasedOnLocation(10, 10);
-        // mary.position = raylib.Vector3{ .x = 10, .y = maryY, .z = 10.0 };
-
-        //try self.npcs.append(mary);
+        mary.texture = try raylib.loadTexture("resources/npc.png");
+        //const marytextureheight: f32 = @floatFromInt(mary.texture.height);
+        const maryY = self.currentScene.GetYValueBasedOnLocation(10, 10);
+        mary.setPosition(10, maryY, 10);
+        try self.npcs.append(mary);
     }
 
     pub fn update(self: *GameManager) void {
@@ -84,6 +82,11 @@ pub const GameManager = struct {
 
             // Draw ground
             self.currentScene.draw(self.camera);
+
+            var i: usize = 0;
+            while (i < self.npcs.items.len) : (i += 1) {
+                self.npcs.items[i].draw(util.camera, self.showDebug);
+            }
         }
 
         self.drawUI();
