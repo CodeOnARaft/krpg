@@ -5,6 +5,7 @@ const raylib = @import("raylib");
 pub const TriggerTypes = enum {
     Test,
     SceneChange,
+    Conversation,
 };
 
 pub const Trigger = struct {
