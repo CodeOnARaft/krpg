@@ -1,6 +1,6 @@
 const raylib = @import("raylib");
 const types = @import("types");
-
+const settings = @import("settings");
 pub const NPC = struct {
     name: []const u8,
     position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
@@ -15,13 +15,13 @@ pub const NPC = struct {
         self.trigger.setPosition(x, y, z);
     }
 
-    pub fn draw(self: *NPC, camera: raylib.Camera3D, debug: bool) void {
+    pub fn draw(self: *NPC, camera: raylib.Camera3D) void {
         if (self.texture.id == 0 or !self.active) {
             return;
         }
 
         raylib.drawBillboard(camera, self.texture, self.position, 0.5, raylib.Color.white);
-        if (debug) {
+        if (settings.gameSettings.debug) {
             self.trigger.draw();
         }
     }

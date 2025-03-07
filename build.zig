@@ -87,6 +87,7 @@ pub fn build(b: *std.Build) !void {
 
     utility_mod.addImport("types", types_mod);
     utility_mod.addImport("settings", settings_mod);
+    utility_mod.addImport("utility", utility_mod);
 
     managers_mod.addImport("types", types_mod);
     managers_mod.addImport("settings", settings_mod);

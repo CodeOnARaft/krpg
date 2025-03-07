@@ -2,8 +2,9 @@ const std = @import("std");
 const v3 = @import("vector3_functions.zig");
 const rl = @import("raylib");
 const settings = @import("settings");
+const util = @import("utility");
 
-const cameraDefaultY = 3.0;
+pub const cameraDefaultY = 3.0;
 
 pub fn constU8toU8(inString: []const u8) ![]u8 {
     const outString = try std.fmt.allocPrint(std.heap.page_allocator, "{s}", .{inString});
@@ -51,18 +52,18 @@ pub fn rotateXZRight(v: rl.Vector3) rl.Vector3 {
 }
 
 pub fn getViewingRay() rl.Ray {
-    const direction = rl.Vector3{
-        .x = camera.target.x - camera.position.x,
-        .y = camera.target.y - camera.position.y,
-        .z = camera.target.z - camera.position.z,
-    };
+    const dx = camera.target.x - camera.position.x;
+    const dy = camera.target.y - camera.position.y;
+    const dz = camera.target.z - camera.position.z;
+
+    const normal = util.normalizeVec3(rl.Vector3{ .x = dx, .y = dy, .z = dz });
 
     const ray = rl.Ray{
         .position = camera.position,
         .direction = rl.Vector3{
-            .x = direction.x * settings.interactDistance,
-            .y = direction.y * settings.interactDistance,
-            .z = direction.z * settings.interactDistance,
+            .x = normal.x,
+            .y = normal.y,
+            .z = normal.z,
         },
     };
 

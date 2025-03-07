@@ -20,7 +20,8 @@ pub fn FindYFromNormal(normal: raylib.Vector3, point: raylib.Vector3, x: f32, z:
     return point.y - (top / bottom);
 }
 
-pub fn distanceVector3(a: raylib.Vector3, b: raylib.Vector3) f32 {
+//
+pub fn distanceVector3_XZ(a: raylib.Vector3, b: raylib.Vector3) f32 {
     return std.math.sqrt(std.math.pow(f32, a.x - b.x, 2) + std.math.pow(f32, a.z - b.z, 2));
 }
 

@@ -114,17 +114,39 @@ pub const Scene = struct {
     }
 
     pub fn UpdateCameraPosition(self: *Scene, camera: *raylib.Camera) void {
-        var sector: types.GroundSector = self.loadedSectors.items[0]; // TODO figure out the sector
-
-        const y = sector.GetYValueBasedOnLocation(camera.position.x, camera.position.z);
+        const y = self.GetYValueBasedOnLocation(camera.position.x, camera.position.z);
         camera.target.y = camera.target.y + (y - camera.position.y);
         camera.position.y = y;
     }
 
     pub fn GetYValueBasedOnLocation(self: *Scene, x: f32, z: f32) f32 {
-        var sector: types.GroundSector = self.loadedSectors.items[0]; // TODO figure out the sector
+        if (self.loadedSectors.items.len == 0 or x <= 0 or z <= 0) {
+            return 0.0;
+        }
 
-        return sector.GetYValueBasedOnLocation(x, z);
+        const fx = @floor(x);
+        const fz = @floor(z);
+        // std.debug.print("input x: {} z: {}\n", .{ fx, fz });
+
+        const mx = fx - @mod(fx, types.GroundSectorSize);
+        const mz = fz - @mod(fz, types.GroundSectorSize);
+        // std.debug.print("mod x: {} z: {}\n", .{ mx, mz });
+
+        const tilex: u32 = @intFromFloat(@floor(mx / types.GroundSectorSize));
+        const tilez: u32 = @intFromFloat(@floor(mz / types.GroundSectorSize));
+
+        for (0..self.loadedSectors.items.len) |index| {
+            var sector = self.loadedSectors.items[index];
+            if (sector.gridX == tilex and sector.gridZ == tilez) {
+                return sector.GetYValueBasedOnLocation(x, z);
+            }
+        }
+
+        if (settings.gameSettings.debug) {
+            std.debug.print("No sector found for x: {} z: {}\n", .{ tilex, tilez });
+            std.debug.print("input x: {} z: {}\n", .{ x, z });
+        }
+        return 0.0;
     }
 
     pub fn draw(self: *Scene) void {
@@ -134,7 +156,7 @@ pub const Scene = struct {
 
         var i: usize = 0;
         while (i < self.loadedNPCs.items.len) : (i += 1) {
-            self.loadedNPCs.items[i].draw(util.camera, true);
+            self.loadedNPCs.items[i].draw(util.camera);
         }
     }
 

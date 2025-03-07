@@ -6,6 +6,7 @@ pub const GroundSectorMaxZTriangles = 25;
 pub const GroundSectorMaxXTriangles = 50;
 pub const GroundSectorTriangleSize = GroundSectorMaxXTriangles * GroundSectorMaxZTriangles;
 pub const GroundSectorScale: f32 = 10.0;
+pub const GroundSectorSize = GroundSectorTriangleSize * GroundSectorScale;
 
 pub const GroundSector = struct {
     triangles: [GroundSectorTriangleSize]types.Triangle,
@@ -123,7 +124,7 @@ pub const GroundSector = struct {
         for (self.triangles) |triangle| {
             if (zasF32 >= triangle.a.z and (zasF32 <= triangle.c.z or zasF32 < triangle.b.z)) {
                 if (util.TestIfPointInTriangle2D(v3, triangle.a, triangle.b, triangle.c)) {
-                    y = util.FindYFromNormal(triangle.normal, triangle.a, v3.x, v3.z) + 2;
+                    y = util.FindYFromNormal(triangle.normal, triangle.a, v3.x, v3.z) + 2.0;
 
                     break;
                 }
