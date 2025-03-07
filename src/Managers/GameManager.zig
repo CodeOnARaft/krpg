@@ -86,13 +86,6 @@ pub const GameManager = struct {
 
         self.currentScene.drawUI();
 
-        if (settings.gameSettings.debug) {
-            // raylib.drawRectangle(10, 10, 220, 70, raylib.Color.sky_blue.fade(0.5));
-            // raylib.drawRectangleLines(10, 10, 220, 70, raylib.Color.blue);
-
-            // raylib.drawFPS(5, 5);
-        }
-
         self.console.drawConsole();
     }
 };

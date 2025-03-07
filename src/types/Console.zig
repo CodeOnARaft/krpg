@@ -5,6 +5,7 @@ const raylib = @import("raylib");
 const gui = @import("raygui");
 const types = @import("types");
 const managers = @import("managers");
+const basic = types.Basic;
 
 pub const ConsoleState = enum {
     Opening,
@@ -26,6 +27,8 @@ pub const Console = struct {
     height: f32 = consoleMinHeight,
     typedText: []const u8 = "",
     game_manager: *managers.GameManager = undefined,
+    lastKeyCode: raylib.KeyboardKey = raylib.KeyboardKey.null,
+    lastRead: f32 = 0.0,
 
     pub fn init(self: *Console, game_manager: *managers.GameManager) void {
         self.game_manager = game_manager;
@@ -38,10 +41,10 @@ pub const Console = struct {
 
         if (self.state == ConsoleState.Open or self.state.isSliding()) {
             if (!self.state.isSliding()) {
-                const released = util.findKeyReleased();
+                const released = self.findKeyReleased();
                 if (released.isPressed) {
                     if (released.isBackspace) {
-                        self.typedText = removeChar(std.heap.page_allocator, self.typedText) catch |err| {
+                        self.typedText = util.String.removeCharConstU8(std.heap.page_allocator, self.typedText) catch |err| {
                             std.debug.print("Error removing char: {}\n", .{err});
                             return;
                         };
@@ -51,7 +54,7 @@ pub const Console = struct {
                         std.heap.page_allocator.free(self.typedText);
                         self.typedText = "";
                     } else {
-                        self.typedText = appendChar(std.heap.page_allocator, self.typedText, released.value) catch |err| {
+                        self.typedText = util.String.appendCharConstU8(std.heap.page_allocator, self.typedText, released.value) catch |err| {
                             std.debug.print("Error appending char: {}\n", .{err});
                             return;
                         };
@@ -64,7 +67,7 @@ pub const Console = struct {
                 return;
             };
             defer std.heap.page_allocator.free(terminal);
-            const tt = toSentinel(std.heap.page_allocator, terminal) catch |err| {
+            const tt = util.String.toSentinelConstU8(std.heap.page_allocator, terminal) catch |err| {
                 std.debug.print("Error allocating typedText: {}\n", .{err});
                 return;
             };
@@ -175,30 +178,37 @@ pub const Console = struct {
             }
         }
     }
+
+    pub fn findKeyReleased(self: *Console) basic.CharValue {
+        self.lastRead += raylib.getFrameTime();
+        if (self.lastKeyCode == raylib.KeyboardKey.null or self.lastRead > 1.0) {
+            self.lastKeyCode = raylib.getKeyPressed();
+            self.lastRead = 0.0;
+        }
+
+        if (raylib.isKeyReleased(self.lastKeyCode)) {
+            //  std.debug.print("Key released: {}\n", .{lastKeyCode});
+
+            if (self.lastKeyCode == raylib.KeyboardKey.backspace) {
+                self.lastKeyCode = raylib.KeyboardKey.null;
+                return basic.CharValue{ .value = 0, .isPressed = true, .isBackspace = true };
+            }
+
+            if (self.lastKeyCode == raylib.KeyboardKey.enter) {
+                self.lastKeyCode = raylib.KeyboardKey.null;
+                return basic.CharValue{ .value = 0, .isPressed = true, .isEnter = true };
+            }
+
+            const val: i32 = @intFromEnum(self.lastKeyCode);
+            self.lastKeyCode = raylib.KeyboardKey.null;
+
+            if (val == 32 or (val >= 32 and val <= 126)) {
+                return basic.CharValue{ .value = @intCast(val), .isPressed = true };
+            }
+        } else {
+            // std.debug.print("Key wait: {}\n", .{lastKeyCode});
+        }
+
+        return basic.CharValue{ .value = 0, .isPressed = false };
+    }
 };
-
-fn toSentinel(allocator: std.mem.Allocator, text: []const u8) anyerror![*:0]const u8 {
-    if (text.len == 0) {
-        return "";
-    }
-    var buffer = try allocator.alloc(u8, text.len + 1); // Allocate new memory
-    std.mem.copyForwards(u8, buffer[0..text.len], text); // Copy safely
-    buffer[text.len] = 0; // Add null terminator
-    return @as([*:0]const u8, @ptrCast(buffer.ptr)); // Cast to sentinel pointer
-}
-
-fn appendChar(allocator: std.mem.Allocator, text: []const u8, new_char: u8) ![]const u8 {
-    std.debug.print("Appending char: {}\n", .{new_char});
-    const new_text = try std.fmt.allocPrint(allocator, "{s}{c}", .{ text, new_char });
-    allocator.free(text); // Free the old memory
-    return new_text;
-}
-
-fn removeChar(allocator: std.mem.Allocator, text: []const u8) ![]const u8 {
-    if (text.len == 0) {
-        return text;
-    }
-    const new_text = try std.fmt.allocPrint(allocator, "{s}", .{text[0 .. text.len - 1]});
-    allocator.free(text); // Free the old memory
-    return new_text;
-}

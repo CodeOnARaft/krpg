@@ -2,6 +2,7 @@ const util = @import("utility");
 const raylib = @import("raylib");
 const std = @import("std");
 const types = @import("types");
+const basic = types.Basic;
 const ArrayList = std.ArrayList;
 
 pub fn SaveGroundSectorToFile(scene_name: []u8, sector: types.GroundSector) anyerror!bool {
@@ -53,7 +54,7 @@ pub fn LoadGroundSectorFromFile(scene_name: []u8, x: i32, z: i32) !?types.Ground
     };
     defer file.close();
 
-    var triangles: [types.GroundSectorTriangleSize]types.Triangle = undefined;
+    var triangles: [types.GroundSectorTriangleSize]basic.Triangle = undefined;
 
     var buf_reader = std.io.bufferedReader(file.reader());
     var in_stream = buf_reader.reader();
@@ -101,7 +102,7 @@ pub fn LoadGroundSectorFromFile(scene_name: []u8, x: i32, z: i32) !?types.Ground
         // const normal = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[12]), std.fmt.parseFloat(f32, parts.items[13]), std.fmt.parseFloat(f32, parts.items[14]));
         // const color = raylib.Color.init(std.fmt.parseInt(parts.items[15]), std.fmt.parseInt(parts.items[16]), std.fmt.parseInt(parts.items[17]), 255);
 
-        const triangle = types.Triangle{
+        const triangle = basic.Triangle{
             .a = a,
             .b = b,
             .c = c,

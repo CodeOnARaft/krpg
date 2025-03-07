@@ -1,4 +1,5 @@
 const types = @import("./_types.zig");
+const basic = types.Basic;
 const raylib = @import("raylib");
 const util = @import("utility");
 
@@ -9,16 +10,16 @@ pub const GroundSectorScale: f32 = 10.0;
 pub const GroundSectorSize = GroundSectorTriangleSize * GroundSectorScale;
 
 pub const GroundSector = struct {
-    triangles: [GroundSectorTriangleSize]types.Triangle,
+    triangles: [GroundSectorTriangleSize]basic.Triangle,
     gridX: u32 = 0,
     gridZ: u32 = 0,
     startX: f32 = 0,
     startZ: f32 = 0,
 
     pub fn new(gridX: u32, gridZ: u32) GroundSector {
-        var triangles: [GroundSectorTriangleSize]types.Triangle = undefined;
+        var triangles: [GroundSectorTriangleSize]basic.Triangle = undefined;
         for (0..triangles.len) |i| {
-            triangles[i] = types.Triangle{
+            triangles[i] = basic.Triangle{
                 .a = raylib.Vector3.zero(),
                 .b = raylib.Vector3.zero(),
                 .c = raylib.Vector3.zero(),
@@ -38,7 +39,7 @@ pub const GroundSector = struct {
         const xStart = current_ground_sector.startX;
         const zStart = current_ground_sector.startZ;
 
-        var lastTriangle: types.Triangle = undefined;
+        var lastTriangle: basic.Triangle = undefined;
         for (0..types.GroundSectorMaxZTriangles) |z| {
             for (0..types.GroundSectorMaxZTriangles) |x| {
 
@@ -89,7 +90,7 @@ pub const GroundSector = struct {
                 const intensity = util.calculateLightIntensity(normal, new_a, new_b, new_c, raylib.Vector3.init(20.5, 100, 11.5));
                 const color = util.applyIntensity(raylib.Color.green, intensity);
 
-                lastTriangle = types.Triangle{
+                lastTriangle = basic.Triangle{
                     .a = new_a,
                     .b = new_b,
                     .c = new_c,
