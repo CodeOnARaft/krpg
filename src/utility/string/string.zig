@@ -25,3 +25,18 @@ pub fn appendCharConstU8(allocator: std.mem.Allocator, text: []const u8, new_cha
     allocator.free(text); // Free the old memory
     return new_text;
 }
+
+pub fn constU8toU8(inString: []const u8) ![]u8 {
+    const outString = try std.fmt.allocPrint(std.heap.page_allocator, "{s}", .{inString});
+    return outString;
+}
+
+pub fn trimSpaceEOL(inString: []const u8) []u8 {
+    const d: []u8 = undefined;
+    const v = constU8toU8(std.mem.trim(u8, inString, " \n")) catch |err| {
+        std.debug.print("Error trimming string: {}\n", .{err});
+        return d;
+    };
+
+    return v;
+}

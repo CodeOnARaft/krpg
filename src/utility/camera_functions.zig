@@ -6,21 +6,6 @@ const util = @import("utility");
 
 pub const cameraDefaultY = 3.0;
 
-pub fn constU8toU8(inString: []const u8) ![]u8 {
-    const outString = try std.fmt.allocPrint(std.heap.page_allocator, "{s}", .{inString});
-    return outString;
-}
-
-pub fn trimSpaceEOL(inString: []const u8) []u8 {
-    const d: []u8 = undefined;
-    const v = constU8toU8(std.mem.trim(u8, inString, " \n")) catch |err| {
-        std.debug.print("Error trimming string: {}\n", .{err});
-        return d;
-    };
-
-    return v;
-}
-
 pub var camera = rl.Camera3D{
     .position = rl.Vector3.init(20, cameraDefaultY, 20),
     .target = rl.Vector3.init(30, cameraDefaultY, 30),

@@ -21,7 +21,7 @@ pub const GameManager = struct {
 
         self.oldCameraPosition = self.camera.position;
 
-        const basicScene = try util.constU8toU8("overworld");
+        const basicScene = try util.String.constU8toU8("overworld");
         const loadedScene = try types.Scene.load(basicScene);
         if (loadedScene == null) {
             self.closeWindow = true;

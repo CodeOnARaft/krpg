@@ -21,7 +21,7 @@ pub const Scene = struct {
     startLocation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
 
     pub fn new() !Scene {
-        const blankName = try util.constU8toU8("_blank");
+        const blankName = try util.String.constU8toU8("_blank");
         return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(std.heap.page_allocator), .loadedNPCs = ArrayList(types.GameObjects.NPC).init(std.heap.page_allocator) };
     }
 
@@ -48,7 +48,7 @@ pub const Scene = struct {
             var it = std.mem.splitScalar(u8, line, ' ');
 
             while (it.next()) |commandPart| {
-                const partU8 = try util.constU8toU8(commandPart);
+                const partU8 = try util.String.constU8toU8(commandPart);
                 try parts.append(partU8);
             }
 

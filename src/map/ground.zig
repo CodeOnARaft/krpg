@@ -65,28 +65,28 @@ pub fn LoadGroundSectorFromFile(scene_name: []u8, x: i32, z: i32) !?types.Ground
         var it = std.mem.splitScalar(u8, line, ',');
 
         while (it.next()) |commandPart| {
-            const partU8 = try util.constU8toU8(commandPart);
+            const partU8 = try util.String.constU8toU8(commandPart);
             try parts.append(partU8);
         }
 
-        const p0: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[0]));
-        const p1: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[1]));
-        const p2: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[2]));
-        const p3: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[3]));
-        const p4: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[4]));
-        const p5: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[5]));
-        const p6: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[6]));
-        const p7: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[7]));
-        const p8: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[8]));
-        const p9: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[9]));
-        const p10: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[10]));
-        const p11: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[11]));
-        const p12: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[12]));
-        const p13: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[13]));
-        const p14: f32 = try std.fmt.parseFloat(f32, util.trimSpaceEOL(parts.items[14]));
-        const p15: u8 = try std.fmt.parseInt(u8, util.trimSpaceEOL(parts.items[15]), 10);
-        const p16: u8 = try std.fmt.parseInt(u8, util.trimSpaceEOL(parts.items[16]), 10);
-        const p17: u8 = try std.fmt.parseInt(u8, util.trimSpaceEOL(parts.items[17]), 10);
+        const p0: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[0]));
+        const p1: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[1]));
+        const p2: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[2]));
+        const p3: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[3]));
+        const p4: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[4]));
+        const p5: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[5]));
+        const p6: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[6]));
+        const p7: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[7]));
+        const p8: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[8]));
+        const p9: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[9]));
+        const p10: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[10]));
+        const p11: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[11]));
+        const p12: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[12]));
+        const p13: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[13]));
+        const p14: f32 = try std.fmt.parseFloat(f32, util.String.trimSpaceEOL(parts.items[14]));
+        const p15: u8 = try std.fmt.parseInt(u8, util.String.trimSpaceEOL(parts.items[15]), 10);
+        const p16: u8 = try std.fmt.parseInt(u8, util.String.trimSpaceEOL(parts.items[16]), 10);
+        const p17: u8 = try std.fmt.parseInt(u8, util.String.trimSpaceEOL(parts.items[17]), 10);
 
         const a = raylib.Vector3.init(p0, p1, p2);
         const b = raylib.Vector3.init(p3, p4, p5);
