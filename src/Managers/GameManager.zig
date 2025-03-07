@@ -12,6 +12,7 @@ pub const GameManager = struct {
     currentScene: types.Scene = undefined,
     closeWindow: bool = false,
     console: types.Console = undefined,
+    player: types.GameObjects.Player = undefined,
 
     pub fn initialize(self: *GameManager) !void {
         self.console = types.Console{};
@@ -30,6 +31,9 @@ pub const GameManager = struct {
         self.currentScene = loadedScene.?;
 
         self.currentScene.UpdateCameraPosition(self.camera);
+
+        self.player = types.GameObjects.Player{};
+        self.player.init(self);
     }
 
     pub fn update(self: *GameManager) void {
@@ -46,6 +50,7 @@ pub const GameManager = struct {
         }
 
         settings.gameSettings.update();
+        self.player.update();
 
         if (!settings.gameSettings.paused) {
             self.camera.update(.first_person);

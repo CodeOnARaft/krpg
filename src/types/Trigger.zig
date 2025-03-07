@@ -36,7 +36,7 @@ pub const Trigger = struct {
 
         if (col.hit) {
             const dis = util.distanceVector3_XZ(self.position, util.camera.position);
-            if (dis < settings.interactDistance) {
+            if (dis < types.Constants.interactDistance) {
                 hit = true;
                 // if (settings.gameSettings.debug) {
                 //     std.debug.print("Hit trigger: {}\n", .{dis});

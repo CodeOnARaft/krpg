@@ -18,7 +18,7 @@ pub const ConsoleState = enum {
 };
 
 const consoleMinHeight = 10.0;
-const consoleMaxHeight = settings.screenHeightf32 / 2.0;
+const consoleMaxHeight = types.Constants.screenHeightf32 / 2.0;
 const consoleSpeed: f32 = 750.0;
 
 pub const Console = struct {
@@ -69,8 +69,8 @@ pub const Console = struct {
                 return;
             };
 
-            _ = gui.guiPanel(raylib.Rectangle{ .x = 0, .y = 0, .width = settings.screenWidthf32, .height = self.height }, "Console");
-            _ = gui.guiLabel(raylib.Rectangle{ .x = 5, .y = settings.screenHeightf32 / 2 - 25, .width = settings.screenWidthf32 - 10, .height = 20 }, tt);
+            _ = gui.guiPanel(raylib.Rectangle{ .x = 0, .y = 0, .width = types.Constants.screenWidthf32, .height = self.height }, "Console");
+            _ = gui.guiLabel(raylib.Rectangle{ .x = 5, .y = types.Constants.screenHeightf32 / 2 - 25, .width = types.Constants.screenWidthf32 - 10, .height = 20 }, tt);
         }
     }
 

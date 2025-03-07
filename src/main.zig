@@ -1,9 +1,9 @@
 const raylib = @import("raylib");
-const settings = @import("settings");
+const types = @import("types");
 const managers = @import("managers");
 
 pub fn main() anyerror!void {
-    raylib.initWindow(settings.screenWidth, settings.screenHeight, "krpg");
+    raylib.initWindow(types.Constants.screenWidth, types.Constants.screenHeight, types.Constants.title);
     defer raylib.closeWindow();
 
     raylib.disableCursor();

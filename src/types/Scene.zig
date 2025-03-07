@@ -6,15 +6,23 @@ const map = @import("map");
 const settings = @import("settings");
 const types = @import("types");
 
+const SceneTypes = enum {
+    Blank,
+    Game,
+    Dialog,
+    Menu,
+};
+
 pub const Scene = struct {
     id: []u8 = undefined,
+    sceneType: SceneTypes = SceneTypes.Blank,
     loadedSectors: ArrayList(types.GroundSector) = undefined,
-    loadedNPCs: ArrayList(types.NPC) = undefined,
+    loadedNPCs: ArrayList(types.GameObjects.NPC) = undefined,
     startLocation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
 
     pub fn new() !Scene {
         const blankName = try util.constU8toU8("_blank");
-        return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(std.heap.page_allocator), .loadedNPCs = ArrayList(types.NPC).init(std.heap.page_allocator) };
+        return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(std.heap.page_allocator), .loadedNPCs = ArrayList(types.GameObjects.NPC).init(std.heap.page_allocator) };
     }
 
     pub fn load(scene_name: []u8) !?Scene {
@@ -99,7 +107,7 @@ pub const Scene = struct {
             }
         }
 
-        var mary: types.NPC = types.NPC{
+        var mary: types.GameObjects.NPC = types.GameObjects.NPC{
             .name = "Mary",
             .position = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
             .active = true,
