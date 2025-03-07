@@ -14,6 +14,7 @@ pub fn toSentinelConstU8(allocator: std.mem.Allocator, text: []const u8) anyerro
         return "";
     }
     var buffer = try allocator.alloc(u8, text.len + 1); // Allocate new memory
+
     std.mem.copyForwards(u8, buffer[0..text.len], text); // Copy safely
     buffer[text.len] = 0; // Add null terminator
     return @as([*:0]const u8, @ptrCast(buffer.ptr)); // Cast to sentinel pointer

@@ -67,13 +67,9 @@ pub const Console = struct {
                 return;
             };
             defer std.heap.page_allocator.free(terminal);
-            const tt = util.String.toSentinelConstU8(std.heap.page_allocator, terminal) catch |err| {
-                std.debug.print("Error allocating typedText: {}\n", .{err});
-                return;
-            };
 
             _ = gui.guiPanel(raylib.Rectangle{ .x = 0, .y = 0, .width = types.Constants.screenWidthf32, .height = self.height }, "Console");
-            _ = gui.guiLabel(raylib.Rectangle{ .x = 5, .y = types.Constants.screenHeightf32 / 2 - 25, .width = types.Constants.screenWidthf32 - 10, .height = 20 }, tt);
+            _ = gui.guiLabel(raylib.Rectangle{ .x = 5, .y = types.Constants.screenHeightf32 / 2 - 25, .width = types.Constants.screenWidthf32 - 10, .height = 20 }, @ptrCast(terminal));
         }
     }
 
