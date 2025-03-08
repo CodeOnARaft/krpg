@@ -15,3 +15,7 @@ pub const Constants = ConstantsImport;
 // namespace types.Basic
 const BasicImport = @import("Basic/_types_basic.zig");
 pub const Basic = BasicImport;
+
+// namespace types.Basic
+const uiImport = @import("ui/_types_ui.zig");
+pub const ui = uiImport;

@@ -15,7 +15,7 @@ pub const Trigger = struct {
     boundingBox: raylib.BoundingBox = undefined,
     position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     size: f32 = 0.1,
-    description: []const u8 = "",
+    description: []u8 = undefined,
 
     pub fn setPosition(self: *Trigger, x: f32, y: f32, z: f32) void {
         self.position = raylib.Vector3{ .x = x, .y = y, .z = z };
@@ -38,11 +38,6 @@ pub const Trigger = struct {
             const dis = util.vector3.distanceVector3_XZ(self.position, util.camera.position);
             if (dis < types.Constants.interactDistance) {
                 hit = true;
-                // if (settings.gameSettings.debug) {
-                //     std.debug.print("Hit trigger: {}\n", .{dis});
-                //     std.debug.print("Ray: {} {} {}\n", .{ ray.direction.x, ray.direction.y, ray.direction.z });
-                //     std.debug.print("position: {} {} {}\n", .{ self.position.x, self.position.y, self.position.z });
-                // }
             }
         }
 

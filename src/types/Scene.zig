@@ -108,7 +108,7 @@ pub const Scene = struct {
         }
 
         var mary: types.GameObjects.NPC = types.GameObjects.NPC{
-            .name = "Mary",
+            .name = @constCast("Mary"),
             .position = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
             .active = true,
         };
@@ -172,9 +172,7 @@ pub const Scene = struct {
         var i: usize = 0;
         while (i < self.loadedNPCs.items.len) : (i += 1) {
             if (self.loadedNPCs.items[i].trigger.checkCollision(util.getViewingRay())) {
-                raylib.drawRectangle(10, 10, 220, 70, raylib.Color.sky_blue.fade(0.5));
-                raylib.drawRectangleLines(10, 10, 220, 70, raylib.Color.blue);
-                raylib.drawText("NPC: Mary", 20, 20, 10, raylib.Color.dark_blue);
+                types.ui.InteractInfo.drawUI(@ptrCast(self.loadedNPCs.items[i].trigger.description));
             }
         }
     }
