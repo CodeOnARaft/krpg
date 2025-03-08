@@ -1,8 +1,8 @@
 const std = @import("std");
-const v3 = @import("vector3_functions.zig");
 const rl = @import("raylib");
 const settings = @import("settings");
 const util = @import("utility");
+const v3 = util.vector3;
 
 pub const cameraDefaultY = 3.0;
 
@@ -41,7 +41,7 @@ pub fn getViewingRay() rl.Ray {
     const dy = camera.target.y - camera.position.y;
     const dz = camera.target.z - camera.position.z;
 
-    const normal = util.normalizeVec3(rl.Vector3{ .x = dx, .y = dy, .z = dz });
+    const normal = util.vector3.normalize(rl.Vector3{ .x = dx, .y = dy, .z = dz });
 
     const ray = rl.Ray{
         .position = camera.position,

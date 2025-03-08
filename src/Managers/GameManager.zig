@@ -21,7 +21,7 @@ pub const GameManager = struct {
 
         self.oldCameraPosition = self.camera.position;
 
-        const basicScene = try util.String.constU8toU8("overworld");
+        const basicScene = try util.string.constU8toU8("overworld");
         const loadedScene = try types.Scene.load(basicScene);
         if (loadedScene == null) {
             self.closeWindow = true;
@@ -56,7 +56,7 @@ pub const GameManager = struct {
             self.camera.update(.first_person);
             self.camera.up = raylib.Vector3.init(0, 1, 0);
 
-            if (!util.Vector3sAreEqual(self.camera.position, self.oldCameraPosition)) {
+            if (!util.vector3.areEqual(self.camera.position, self.oldCameraPosition)) {
                 self.currentScene.UpdateCameraPosition(self.camera);
                 self.oldCameraPosition = self.camera.position;
             }

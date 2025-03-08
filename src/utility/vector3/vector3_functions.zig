@@ -26,29 +26,29 @@ pub fn distanceVector3_XZ(a: raylib.Vector3, b: raylib.Vector3) f32 {
 }
 
 /// Adds two vectors.
-pub fn addVec3(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
+pub fn add(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
     return raylib.Vector3{ .x = a.x + b.x, .y = a.y + b.y, .z = a.z + b.z };
 }
 
 /// Subtracts b from a.
-pub fn subVec3(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
+pub fn sub(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
     return raylib.Vector3{ .x = a.x - b.x, .y = a.y - b.y, .z = a.z - b.z };
 }
 
 /// Scales a vector by a scalar.
-pub fn scaleVec3(v: raylib.Vector3, s: f32) raylib.Vector3 {
+pub fn scale(v: raylib.Vector3, s: f32) raylib.Vector3 {
     return raylib.Vector3{ .x = v.x * s, .y = v.y * s, .z = v.z * s };
 }
 
 pub fn triangleCenter(a: raylib.Vector3, b: raylib.Vector3, c: raylib.Vector3) raylib.Vector3 {
     // The centroid is the average of the vertices.
-    return scaleVec3(addVec3(addVec3(a, b), c), 1.0 / 3.0);
+    return scale(add(add(a, b), c), 1.0 / 3.0);
 }
-pub fn lengthVec3(v: raylib.Vector3) f32 {
-    return std.math.sqrt(dotVec3(v, v));
+pub fn length(v: raylib.Vector3) f32 {
+    return std.math.sqrt(dot(v, v));
 }
 
-pub fn dotVec3(a: raylib.Vector3, b: raylib.Vector3) f32 {
+pub fn dot(a: raylib.Vector3, b: raylib.Vector3) f32 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
@@ -61,8 +61,8 @@ pub fn cross(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
     };
 }
 
-pub fn normalizeVec3(v: raylib.Vector3) raylib.Vector3 {
-    return scaleVec3(v, 1.0 / lengthVec3(v));
+pub fn normalize(v: raylib.Vector3) raylib.Vector3 {
+    return scale(v, 1.0 / length(v));
 }
 
 pub fn calculateLightIntensity(
@@ -75,10 +75,10 @@ pub fn calculateLightIntensity(
     // Compute the center of the triangle.
     const center = triangleCenter(a, b, c);
     // Compute a normalized light direction from the triangle center to the sun.
-    const lightDir = normalizeVec3(subVec3(sunPosition, center));
+    const lightDir = normalize(sub(sunPosition, center));
 
     // Compute the diffuse intensity (clamped to zero if the angle is more than 90°).
-    var diffuseIntensity = dotVec3(triangleNormal, lightDir);
+    var diffuseIntensity = dot(triangleNormal, lightDir);
 
     if (diffuseIntensity < 0.0) {
         diffuseIntensity = 0.0;
@@ -136,15 +136,15 @@ pub fn TestIfPointInTriangle2D(pp: raylib.Vector3, aa: raylib.Vector3, bb: rayli
 
 var viewDistance: f32 = 1000.0;
 
-pub fn Vector3sAreEqual(a: raylib.Vector3, b: raylib.Vector3) bool {
+pub fn areEqual(a: raylib.Vector3, b: raylib.Vector3) bool {
     return a.x == b.x and a.y == b.y and a.z == b.z;
 }
 
 pub fn TriangleIsVisible(triangle: types.Triangle, pos: raylib.Vector3, left: raylib.Vector3, right: raylib.Vector3) bool {
-    const leftScaled = scaleVec3(left, viewDistance);
-    const rightScaled = scaleVec3(right, viewDistance);
+    const leftScaled = scale(left, viewDistance);
+    const rightScaled = scale(right, viewDistance);
 
-    return triangleOverlapOrInside(pos, addVec3(pos, leftScaled), addVec3(pos, rightScaled), triangle.a, triangle.b, triangle.c);
+    return triangleOverlapOrInside(pos, add(pos, leftScaled), add(pos, rightScaled), triangle.a, triangle.b, triangle.c);
 }
 
 const Vec2 = struct {

@@ -35,7 +35,7 @@ pub const Trigger = struct {
         const col: raylib.RayCollision = raylib.getRayCollisionBox(ray, self.boundingBox);
 
         if (col.hit) {
-            const dis = util.distanceVector3_XZ(self.position, util.camera.position);
+            const dis = util.vector3.distanceVector3_XZ(self.position, util.camera.position);
             if (dis < types.Constants.interactDistance) {
                 hit = true;
                 // if (settings.gameSettings.debug) {

@@ -44,7 +44,7 @@ pub const Console = struct {
                 const released = self.findKeyReleased();
                 if (released.isPressed) {
                     if (released.isBackspace) {
-                        self.typedText = util.String.removeCharConstU8(std.heap.page_allocator, self.typedText) catch |err| {
+                        self.typedText = util.string.removeCharConstU8(std.heap.page_allocator, self.typedText) catch |err| {
                             std.debug.print("Error removing char: {}\n", .{err});
                             return;
                         };
@@ -54,7 +54,7 @@ pub const Console = struct {
                         std.heap.page_allocator.free(self.typedText);
                         self.typedText = "";
                     } else {
-                        self.typedText = util.String.appendCharConstU8(std.heap.page_allocator, self.typedText, released.value) catch |err| {
+                        self.typedText = util.string.appendCharConstU8(std.heap.page_allocator, self.typedText, released.value) catch |err| {
                             std.debug.print("Error appending char: {}\n", .{err});
                             return;
                         };

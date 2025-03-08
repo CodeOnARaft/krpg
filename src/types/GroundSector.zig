@@ -124,8 +124,8 @@ pub const GroundSector = struct {
         var y: f32 = 0.0;
         for (self.triangles) |triangle| {
             if (zasF32 >= triangle.a.z and (zasF32 <= triangle.c.z or zasF32 < triangle.b.z)) {
-                if (util.TestIfPointInTriangle2D(v3, triangle.a, triangle.b, triangle.c)) {
-                    y = util.FindYFromNormal(triangle.normal, triangle.a, v3.x, v3.z) + 2.0;
+                if (util.vector3.TestIfPointInTriangle2D(v3, triangle.a, triangle.b, triangle.c)) {
+                    y = util.vector3.FindYFromNormal(triangle.normal, triangle.a, v3.x, v3.z) + 2.0;
 
                     break;
                 }
