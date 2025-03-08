@@ -5,13 +5,16 @@ const util = @import("utility");
 const settings = @import("settings");
 
 pub const TriggerTypes = enum {
-    Test,
+    Empty,
     SceneChange,
     Conversation,
 };
 
+pub const emptyTrigger: types.Trigger = types.Trigger{ .type = types.TriggerTypes.Empty, .description = @constCast("empty") };
+pub const emptyTriggerPtr: *types.Trigger = @constCast(&emptyTrigger);
+
 pub const Trigger = struct {
-    type: TriggerTypes = TriggerTypes.Test,
+    type: TriggerTypes = TriggerTypes.Empty,
     boundingBox: raylib.BoundingBox = undefined,
     position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     size: f32 = 0.1,

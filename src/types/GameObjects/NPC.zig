@@ -6,7 +6,7 @@ pub const NPC = struct {
     position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     heading: raylib.Vector2 = raylib.Vector2{ .x = 0.0, .y = 0.0 },
     texture: raylib.Texture2D = undefined,
-    trigger: types.Trigger = types.Trigger{ .type = types.TriggerTypes.Test, .description = @constCast("Test") },
+    trigger: types.Trigger = types.Trigger{ .type = types.TriggerTypes.Empty, .description = @constCast("empty") },
 
     active: bool = true,
 
@@ -14,6 +14,10 @@ pub const NPC = struct {
         self.position = raylib.Vector3{ .x = x, .y = y, .z = z };
         self.trigger.setPosition(x, y, z);
         self.trigger.description = self.name;
+    }
+
+    pub fn setTriggerType(self: *NPC, triggerType: types.TriggerTypes) void {
+        self.trigger.type = triggerType;
     }
 
     pub fn draw(self: *NPC, camera: raylib.Camera3D) void {

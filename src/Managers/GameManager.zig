@@ -61,6 +61,8 @@ pub const GameManager = struct {
                 self.oldCameraPosition = self.camera.position;
             }
         }
+
+        self.currentScene.update();
     }
 
     pub fn draw(self: *GameManager) void {

@@ -19,6 +19,7 @@ pub const Scene = struct {
     loadedSectors: ArrayList(types.GroundSector) = undefined,
     loadedNPCs: ArrayList(types.GameObjects.NPC) = undefined,
     startLocation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
+    currentTrigger: *types.Trigger = types.emptyTriggerPtr,
 
     pub fn new() !Scene {
         const blankName = try util.string.constU8toU8("_blank");
@@ -27,6 +28,7 @@ pub const Scene = struct {
 
     pub fn load(scene_name: []u8) !?Scene {
         var scene = try new();
+        scene.currentTrigger = types.emptyTriggerPtr;
 
         const cwd = std.fs.cwd();
         const allocator = std.heap.page_allocator;
@@ -113,6 +115,7 @@ pub const Scene = struct {
             .active = true,
         };
         mary.texture = try raylib.loadTexture("resources/npc.png");
+        mary.setTriggerType(types.TriggerTypes.Conversation);
         //const marytextureheight: f32 = @floatFromInt(mary.texture.height);
         const maryY = scene.GetYValueBasedOnLocation(10, 10);
         mary.setPosition(10, maryY, 10);
@@ -157,6 +160,16 @@ pub const Scene = struct {
         return 0.0;
     }
 
+    pub fn update(self: *Scene) void {
+        if (raylib.isKeyReleased(raylib.KeyboardKey.e)) {
+            if (self.currentTrigger.type != types.TriggerTypes.Empty) {
+                std.debug.print("Interacting with trigger: {s} \n", .{self.currentTrigger.description});
+                self.currentTrigger = types.emptyTriggerPtr;
+            } else {
+                std.debug.print("No trigger to interact with\n", .{});
+            }
+        }
+    }
     pub fn draw(self: *Scene) void {
         for (0..self.loadedSectors.items.len) |index| {
             self.loadedSectors.items[index].draw();
@@ -172,6 +185,7 @@ pub const Scene = struct {
         var i: usize = 0;
         while (i < self.loadedNPCs.items.len) : (i += 1) {
             if (self.loadedNPCs.items[i].trigger.checkCollision(util.getViewingRay())) {
+                self.currentTrigger = &self.loadedNPCs.items[i].trigger;
                 types.ui.InteractInfo.drawUI(@ptrCast(self.loadedNPCs.items[i].trigger.description));
             }
         }
