@@ -1,33 +1,25 @@
-//! By convention, main.zig is where your main function lives in the case that
-//! you are building an executable. If you are making a library, the convention
-//! is to delete this file and start with root.zig instead.
-const std = @import("std");
+const raylib = @import("raylib");
+const raygui = @import("raygui");
 
-pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+pub fn main() anyerror!void {
+    raylib.initWindow(1280, 720, "Editor");
+    defer raylib.closeWindow();
+    var showMessageBox: bool = false;
+    while (!raylib.windowShouldClose()) {
+        raylib.beginDrawing();
+        defer raylib.endDrawing();
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
+        raylib.clearBackground(raylib.Color.black);
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+        if (raygui.guiButton(raylib.Rectangle{ .x = 24, .y = 24, .width = 120, .height = 30 }, "#191#Show Message") > 0) {
+            showMessageBox = true;
+        }
 
-    try bw.flush(); // Don't forget to flush!
-}
+        var result: i32 = -1;
+        if (showMessageBox) {
+            result = raygui.guiMessageBox(raylib.Rectangle{ .x = 85, .y = 70, .width = 250, .height = 100 }, "#191#Message Box", "Hi! This is a message!", "Nice;Cool");
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // Try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
-}
-
-test "fuzz example" {
-    // Try passing `--fuzz` to `zig build` and see if it manages to fail this test case!
-    const input_bytes = std.testing.fuzzInput(.{});
-    try std.testing.expect(!std.mem.eql(u8, "canyoufindme", input_bytes));
+            if (result >= 0) showMessageBox = false;
+        }
+    }
 }
