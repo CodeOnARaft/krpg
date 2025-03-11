@@ -3,7 +3,8 @@ const std = @import("std");
 const util = @import("utility");
 const ArrayList = std.ArrayList;
 const map = @import("map");
-const settings = @import("settings");
+//const settings = @import("settings");
+const shared = @import("shared");
 const types = @import("types");
 
 const SceneTypes = enum {
@@ -153,7 +154,7 @@ pub const Scene = struct {
             }
         }
 
-        if (settings.gameSettings.debug) {
+        if (shared.settings.gameSettings.debug) {
             std.debug.print("No sector found for x: {} z: {}\n", .{ tilex, tilez });
             std.debug.print("input x: {} z: {}\n", .{ x, z });
         }

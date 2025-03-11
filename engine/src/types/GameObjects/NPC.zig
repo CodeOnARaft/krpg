@@ -1,6 +1,7 @@
 const raylib = @import("raylib");
 const types = @import("types");
-const settings = @import("settings");
+const shared = @import("shared");
+
 pub const NPC = struct {
     name: []u8,
     position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
@@ -26,7 +27,7 @@ pub const NPC = struct {
         }
 
         raylib.drawBillboard(camera, self.texture, self.position, 0.5, raylib.Color.white);
-        if (settings.gameSettings.debug) {
+        if (shared.settings.gameSettings.debug) {
             self.trigger.draw();
         }
     }

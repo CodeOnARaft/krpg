@@ -1,4 +1,4 @@
-const settings = @import("settings");
+const shared = @import("shared");
 const std = @import("std");
 const util = @import("utility");
 const raylib = @import("raylib");
@@ -86,7 +86,7 @@ pub const Console = struct {
             if (self.height <= consoleMinHeight) {
                 self.height = consoleMinHeight;
                 self.state = ConsoleState.Closed;
-                settings.gameSettings.paused = false;
+                shared.settings.gameSettings.paused = false;
             }
         }
     }
@@ -108,7 +108,7 @@ pub const Console = struct {
             return;
         }
 
-        settings.gameSettings.paused = true;
+        shared.settings.gameSettings.paused = true;
         self.height = consoleMinHeight;
         self.state = ConsoleState.Opening;
     }

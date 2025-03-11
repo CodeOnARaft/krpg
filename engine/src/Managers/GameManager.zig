@@ -3,7 +3,8 @@ const std = @import("std");
 const util = @import("utility");
 const ArrayList = std.ArrayList;
 const map = @import("map");
-const settings = @import("settings");
+//const settings = @import("settings");
+const shared = @import("shared");
 const types = @import("types");
 
 pub const GameManager = struct {
@@ -42,17 +43,17 @@ pub const GameManager = struct {
         }
 
         if (raylib.isKeyReleased(raylib.KeyboardKey.f5)) {
-            settings.gameSettings.debug = !settings.gameSettings.debug;
+            shared.settings.gameSettings.debug = !shared.settings.gameSettings.debug;
         }
 
         if (raylib.isKeyReleased(raylib.KeyboardKey.grave)) {
             self.console.consoleToggle();
         }
 
-        settings.gameSettings.update();
+        shared.settings.gameSettings.update();
         self.player.update();
 
-        if (!settings.gameSettings.paused) {
+        if (!shared.settings.gameSettings.paused) {
             self.camera.update(.first_person);
             self.camera.up = raylib.Vector3.init(0, 1, 0);
 
