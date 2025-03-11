@@ -1,25 +1,39 @@
 const raylib = @import("raylib");
 const raygui = @import("raygui");
 
+pub var camera = raylib.Camera3D{
+    .position = raylib.Vector3.init(20, 25, 20),
+    .target = raylib.Vector3.init(30, 25, 30),
+    .up = raylib.Vector3.init(0, 1, 0),
+    .fovy = 60,
+    .projection = .perspective,
+};
+
 pub fn main() anyerror!void {
     raylib.initWindow(1280, 720, "Editor");
     defer raylib.closeWindow();
-    var showMessageBox: bool = false;
+    raylib.maximizeWindow();
+
+    raygui.guiLoadStyle("resources/style_cyber.rgs");
+
     while (!raylib.windowShouldClose()) {
+        camera.update(.free);
         raylib.beginDrawing();
         defer raylib.endDrawing();
 
         raylib.clearBackground(raylib.Color.black);
 
-        if (raygui.guiButton(raylib.Rectangle{ .x = 24, .y = 24, .width = 120, .height = 30 }, "#191#Show Message") > 0) {
-            showMessageBox = true;
-        }
+        {
+            camera.begin();
+            defer camera.end();
 
-        var result: i32 = -1;
-        if (showMessageBox) {
-            result = raygui.guiMessageBox(raylib.Rectangle{ .x = 85, .y = 70, .width = 250, .height = 100 }, "#191#Message Box", "Hi! This is a message!", "Nice;Cool");
-
-            if (result >= 0) showMessageBox = false;
+            raylib.drawGrid(100, 10);
         }
+        drawMenu();
     }
+}
+
+fn drawMenu() void {
+    const style = raygui.guiGetStyle(raygui.GuiControl.default, raygui.GuiDefaultProperty.background_color);
+    raylib.drawRectangle(0, 0, 1280, 50, raylib.fade(raylib.getColor(@intCast(style)), 1));
 }
