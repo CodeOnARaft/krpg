@@ -14,6 +14,7 @@ pub const GameManager = struct {
     closeWindow: bool = false,
     console: types.Console = undefined,
     player: types.GameObjects.Player = undefined,
+    model: raylib.Model = undefined,
 
     pub fn initialize(self: *GameManager) !void {
         self.console = types.Console{};
@@ -35,6 +36,12 @@ pub const GameManager = struct {
 
         self.player = types.GameObjects.Player{};
         self.player.init(self);
+
+        // Test model from https://www.fab.com/listings/c31a5416-5ed9-48a3-8070-280884403fc8
+        self.model = try raylib.loadModel("resources/barrel.glb"); // Load model
+        const texture = try raylib.loadTexture("resources/T_Barrel_BaseColor.png"); // Load model texture
+        self.model.materials[0].maps[0].texture = texture; // Set map diffuse texture
+
     }
 
     pub fn update(self: *GameManager) void {
@@ -77,6 +84,8 @@ pub const GameManager = struct {
 
             // Draw ground
             self.currentScene.draw();
+
+            raylib.drawModel(self.model, raylib.Vector3{ .x = 12, .y = self.currentScene.GetYValueBasedOnLocation(12, 12) + 1.5, .z = 12 }, 0.5, raylib.Color.white); // Draw 3d model with texture
         }
 
         self.drawUI();
