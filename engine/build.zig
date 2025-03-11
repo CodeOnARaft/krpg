@@ -56,6 +56,10 @@ pub fn build(b: *std.Build) !void {
         .root_source_file = b.path("src/Managers/_managers.zig"),
     });
 
+    const shared = b.addModule("shared", .{
+        .root_source_file = b.path("../shared/src/root.zig"),
+    });
+
     // add imports
     map_mod.addImport("raylib", raylib);
     utility_mod.addImport("raylib", raylib);
@@ -93,6 +97,7 @@ pub fn build(b: *std.Build) !void {
     managers_mod.addImport("settings", settings_mod);
     managers_mod.addImport("utility", utility_mod);
     managers_mod.addImport("map", map_mod);
+    managers_mod.addImport("shared", shared);
 
     const exe = b.addExecutable(.{ .name = "krpg", .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });
 
