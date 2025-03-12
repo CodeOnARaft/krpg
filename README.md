@@ -4,6 +4,8 @@
 
 krpg is a simple old school rpg, imagined in the vein of Daggerfall.
 
+Very early development.
+
 The main purpose of this project is to teach myself zig. Because of this, do not expect great zig code.
 
 ![](screenshots/20250311_01.png)
@@ -12,7 +14,23 @@ The main purpose of this project is to teach myself zig. Because of this, do not
 
 Project currently uses zig v0.13
 
-The main project is in the [engine](./engine/) folder, do a **zig build run** there.
+The game project is in the [game](./game/) folder, do a **zig build run** there.
+
+The editor project is in the [editor](./editor/) folder, do a **zig build run** there.
+
+## Game Controls
+
+|Control| Function|
+|--|--|
+|WASD|Walking|
+|Mouse|Look|
+| e| interact|
+|~|Console|
+
+### Console comands 
+|Control| Function|
+|--|--|
+|LOCATION X Y| WARP to X,Y position|
 
 
 

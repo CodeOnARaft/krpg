@@ -1,6 +1,7 @@
 const raylib = @import("raylib");
 const std = @import("std");
-const types = @import("types");
+const shared = @import("shared");
+const types = shared.types;
 
 pub fn GetEdgeVector(a: raylib.Vector3, b: raylib.Vector3) raylib.Vector3 {
     return raylib.Vector3.init(b.x - a.x, b.y - a.y, b.z - a.z);

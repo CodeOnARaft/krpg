@@ -1,6 +1,6 @@
 const raylib = @import("raylib");
-const types = @import("types");
-const shared = @import("shared");
+const types = @import("../_types.zig");
+const settings = @import("../../settings/_settings.zig");
 
 pub const NPC = struct {
     name: []u8,
@@ -27,7 +27,7 @@ pub const NPC = struct {
         }
 
         raylib.drawBillboard(camera, self.texture, self.position, 0.5, raylib.Color.white);
-        if (shared.settings.gameSettings.debug) {
+        if (settings.gameSettings.debug) {
             self.trigger.draw();
         }
     }

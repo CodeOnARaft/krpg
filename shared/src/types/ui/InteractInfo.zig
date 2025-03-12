@@ -1,7 +1,10 @@
 const raylib = @import("raylib");
 const std = @import("std");
-const util = @import("utility");
-const types = @import("types");
+const shared = @import("../../root.zig");
+const types = shared.types;
+const managers = shared.managers;
+const basic = types.Basic;
+const util = shared.utility;
 
 pub const InteractInfo = struct {
     pub fn drawUI(message: []u8) void {

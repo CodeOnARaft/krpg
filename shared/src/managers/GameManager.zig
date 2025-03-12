@@ -1,11 +1,10 @@
 const raylib = @import("raylib");
 const std = @import("std");
-const util = @import("utility");
 const ArrayList = std.ArrayList;
-const map = @import("map");
-//const settings = @import("settings");
-const shared = @import("shared");
-const types = @import("types");
+const shared = @import("../root.zig");
+const types = shared.types;
+const map = shared.map;
+const util = shared.utility;
 
 pub const GameManager = struct {
     camera: *raylib.Camera3D = undefined,

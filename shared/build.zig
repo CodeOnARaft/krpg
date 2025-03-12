@@ -60,14 +60,14 @@ pub fn build(b: *std.Build) !void {
     // running `zig build`).
     b.installArtifact(lib);
 
-    const shared = b.addModule("shared", .{
-        .root_source_file = b.path("src/settings/_settings.zig"),
-    });
+    // const shared = b.addModule("shared", .{
+    //     .root_source_file = b.path("src/settings/_settings.zig"),
+    // });
 
     // add imports
-    shared.addImport("raylib", raylib);
+    //shared.addImport("raylib", raylib);
 
-    shared.addImport("raygui", raygui);
+    //shared.addImport("raygui", raygui);
 
     const exe = b.addSharedLibrary(std.Build.SharedLibraryOptions{
         .name = "shared",
@@ -79,7 +79,7 @@ pub fn build(b: *std.Build) !void {
     exe.linkLibrary(raylib_artifact);
     exe.root_module.addImport("raylib", raylib);
     exe.root_module.addImport("raygui", raygui);
-    exe.root_module.addImport("shared", shared);
+    // exe.root_module.addImport("shared", shared);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

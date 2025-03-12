@@ -1,9 +1,11 @@
-const util = @import("utility");
 const raylib = @import("raylib");
 const std = @import("std");
-const types = @import("types");
-const basic = types.Basic;
 const ArrayList = std.ArrayList;
+const shared = @import("../root.zig");
+const types = shared.types;
+const managers = shared.managers;
+const basic = types.Basic;
+const util = shared.utility;
 
 pub fn SaveGroundSectorToFile(scene_name: []u8, sector: types.GroundSector) anyerror!bool {
     const cwd = std.fs.cwd();

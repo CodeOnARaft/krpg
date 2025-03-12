@@ -1,7 +1,10 @@
 const std = @import("std");
 const rl = @import("raylib");
-const settings = @import("settings");
-const util = @import("utility");
+const shared = @import("../root.zig");
+const types = shared.types;
+const managers = shared.managers;
+const basic = types.Basic;
+const util = shared.utility;
 const v3 = util.vector3;
 
 pub const cameraDefaultY = 3.0;

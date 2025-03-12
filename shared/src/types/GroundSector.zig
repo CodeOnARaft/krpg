@@ -1,7 +1,9 @@
-const types = @import("./_types.zig");
-const basic = types.Basic;
 const raylib = @import("raylib");
-const util = @import("utility");
+const shared = @import("../root.zig");
+const types = shared.types;
+const managers = shared.managers;
+const basic = types.Basic;
+const util = shared.utility;
 
 pub const GroundSectorMaxZTriangles = 25;
 pub const GroundSectorMaxXTriangles = 50;

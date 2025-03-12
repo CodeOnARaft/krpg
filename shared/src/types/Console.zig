@@ -1,11 +1,11 @@
-const shared = @import("shared");
 const std = @import("std");
-const util = @import("utility");
 const raylib = @import("raylib");
 const gui = @import("raygui");
-const types = @import("types");
-const managers = @import("managers");
+const shared = @import("../root.zig");
+const types = shared.types;
+const managers = shared.managers;
 const basic = types.Basic;
+const util = shared.utility;
 
 pub const ConsoleState = enum {
     Opening,

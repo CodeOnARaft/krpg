@@ -36,57 +36,57 @@ pub fn build(b: *std.Build) !void {
     }
 
     // create modules
-    const map_mod = b.addModule("map", .{
-        .root_source_file = b.path("src/map/_map.zig"),
-    });
+    // const map_mod = b.addModule("map", .{
+    //     .root_source_file = b.path("src/map/_map.zig"),
+    // });
 
-    const utility_mod = b.addModule("utility", .{
-        .root_source_file = b.path("src/utility/_utility.zig"),
-    });
+    // const utility_mod = b.addModule("utility", .{
+    //     .root_source_file = b.path("src/utility/_utility.zig"),
+    // });
 
-    const types_mod = b.addModule("types", .{
-        .root_source_file = b.path("src/types/_types.zig"),
-    });
+    // const types_mod = b.addModule("types", .{
+    //     .root_source_file = b.path("src/types/_types.zig"),
+    // });
 
-    const managers_mod = b.addModule("managers", .{
-        .root_source_file = b.path("src/Managers/_managers.zig"),
-    });
+    // const managers_mod = b.addModule("managers", .{
+    //     .root_source_file = b.path("src/Managers/_managers.zig"),
+    // });
 
     const shared = b.addModule("shared", .{
         .root_source_file = b.path("../shared/src/root.zig"),
     });
 
     // add imports
-    map_mod.addImport("raylib", raylib);
-    utility_mod.addImport("raylib", raylib);
-    types_mod.addImport("raylib", raylib);
-    managers_mod.addImport("raylib", raylib);
+    // map_mod.addImport("raylib", raylib);
+    // utility_mod.addImport("raylib", raylib);
+    // types_mod.addImport("raylib", raylib);
+    // managers_mod.addImport("raylib", raylib);
     shared.addImport("raylib", raylib);
 
-    map_mod.addImport("raygui", raygui);
-    utility_mod.addImport("raygui", raygui);
-    types_mod.addImport("raygui", raygui);
-    managers_mod.addImport("raygui", raygui);
+    // map_mod.addImport("raygui", raygui);
+    // utility_mod.addImport("raygui", raygui);
+    // types_mod.addImport("raygui", raygui);
+    // managers_mod.addImport("raygui", raygui);
     shared.addImport("raygui", raygui);
 
-    map_mod.addImport("utility", utility_mod);
-    map_mod.addImport("shared", shared);
-    map_mod.addImport("types", types_mod);
+    // map_mod.addImport("utility", utility_mod);
+    // map_mod.addImport("shared", shared);
+    // map_mod.addImport("types", types_mod);
 
-    types_mod.addImport("shared", shared);
-    types_mod.addImport("utility", utility_mod);
-    types_mod.addImport("map", map_mod);
-    types_mod.addImport("types", types_mod);
-    types_mod.addImport("managers", managers_mod);
+    // types_mod.addImport("shared", shared);
+    // types_mod.addImport("utility", utility_mod);
+    // types_mod.addImport("map", map_mod);
+    // types_mod.addImport("types", types_mod);
+    // types_mod.addImport("managers", managers_mod);
 
-    utility_mod.addImport("types", types_mod);
-    utility_mod.addImport("shared", shared);
-    utility_mod.addImport("utility", utility_mod);
+    // utility_mod.addImport("types", types_mod);
+    // utility_mod.addImport("shared", shared);
+    // utility_mod.addImport("utility", utility_mod);
 
-    managers_mod.addImport("types", types_mod);
-    managers_mod.addImport("shared", shared);
-    managers_mod.addImport("utility", utility_mod);
-    managers_mod.addImport("map", map_mod);
+    // managers_mod.addImport("types", types_mod);
+    // managers_mod.addImport("shared", shared);
+    // managers_mod.addImport("utility", utility_mod);
+    // managers_mod.addImport("map", map_mod);
 
     const exe = b.addExecutable(.{ .name = "krpg", .root_source_file = b.path("src/main.zig"), .optimize = optimize, .target = target });
 
@@ -94,11 +94,11 @@ pub fn build(b: *std.Build) !void {
     exe.root_module.addImport("raylib", raylib);
     exe.root_module.addImport("raygui", raygui);
 
-    exe.root_module.addImport("map", map_mod);
-    exe.root_module.addImport("utility", utility_mod);
     exe.root_module.addImport("shared", shared);
-    exe.root_module.addImport("types", types_mod);
-    exe.root_module.addImport("managers", managers_mod);
+    // exe.root_module.addImport("map", map_mod);
+    // exe.root_module.addImport("utility", utility_mod);
+    // exe.root_module.addImport("types", types_mod);
+    // exe.root_module.addImport("managers", managers_mod);
 
     const run_cmd = b.addRunArtifact(exe);
     const run_step = b.step("run", "Run krpg");

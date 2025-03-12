@@ -11,7 +11,6 @@
 * NPC Template Type to duplication 
 * Scene Way Point System
 
-
 ## Future Stuff
 * Attributes (Health, Mana, Str, etc)
 * Mobs
@@ -23,3 +22,7 @@
 * Weather System
 * Day\Night System
     * Time System
+
+
+## Project
+* shared importing isnt correct between other projects

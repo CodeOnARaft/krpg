@@ -1,11 +1,11 @@
 const raylib = @import("raylib");
 const std = @import("std");
-const util = @import("utility");
 const ArrayList = std.ArrayList;
-const map = @import("map");
-const settings = @import("settings");
-const types = @import("types");
-const managers = @import("managers");
+const shared = @import("../../root.zig");
+const types = shared.types;
+const managers = shared.managers;
+const basic = types.Basic;
+const util = shared.utility;
 
 pub const Player = struct {
     gameManager: *managers.GameManager = undefined,

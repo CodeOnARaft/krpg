@@ -1,8 +1,10 @@
-const types = @import("types");
 const std = @import("std");
 const raylib = @import("raylib");
-const util = @import("utility");
-const settings = @import("settings");
+const shared = @import("../root.zig");
+const types = shared.types;
+const managers = shared.managers;
+const basic = types.Basic;
+const util = shared.utility;
 
 pub const TriggerTypes = enum {
     Empty,

@@ -1,6 +1,7 @@
 const raylib = @import("raylib");
-const types = @import("types");
-const managers = @import("managers");
+const shared = @import("shared");
+const types = shared.types;
+const managers = shared.managers;
 
 pub fn main() anyerror!void {
     raylib.initWindow(types.Constants.screenWidth, types.Constants.screenHeight, types.Constants.title);

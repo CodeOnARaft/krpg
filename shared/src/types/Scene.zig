@@ -1,11 +1,12 @@
 const raylib = @import("raylib");
 const std = @import("std");
-const util = @import("utility");
 const ArrayList = std.ArrayList;
-const map = @import("map");
-//const settings = @import("settings");
-const shared = @import("shared");
-const types = @import("types");
+const shared = @import("../root.zig");
+const types = shared.types;
+const managers = shared.managers;
+const basic = types.Basic;
+const util = shared.utility;
+const map = shared.map;
 
 const SceneTypes = enum {
     Blank,
