@@ -33,7 +33,17 @@ pub fn main() anyerror!void {
     }
 }
 
+var openFile = true;
 fn drawMenu() void {
     const style = raygui.guiGetStyle(raygui.GuiControl.default, raygui.GuiDefaultProperty.background_color);
-    raylib.drawRectangle(0, 0, 1280, 50, raylib.fade(raylib.getColor(@intCast(style)), 1));
+    raylib.drawRectangle(0, 0, 1280, 25, raylib.fade(raylib.getColor(@intCast(style)), 1));
+
+    const openIcon = @intFromEnum(raygui.GuiIconName.icon_file_open);
+    raygui.guiDrawIcon(openIcon, 5, 5, 1, raylib.Color.gray);
+
+    if (openFile) {
+        if (raygui.guiWindowBox(raylib.Rectangle{ .x = 100, .y = 100, .height = 150, .width = 200 }, "Open Scene") != 0) {
+            openFile = false;
+        }
+    }
 }
