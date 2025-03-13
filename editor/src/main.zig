@@ -8,8 +8,6 @@ pub fn main() anyerror!void {
 
     raylib.setExitKey(.null);
 
-    raylib.maximizeWindow();
-
     raygui.guiLoadStyle("resources/style_cyber.rgs");
 
     var editor = Editor.Editor{};
