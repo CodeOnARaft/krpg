@@ -7,11 +7,19 @@ pub const Editor = struct {
     camera: raylib.Camera3D = undefined,
     openFile: bool = false,
     menu: ui.Menu = undefined,
+    sceneWindow: ui.SceneWindow = undefined,
+    propertyWindow: ui.PropertiesWindow = undefined,
     w: f32 = 1280.0,
     h: f32 = 720.0,
     pub fn init(self: *Editor) void {
         self.menu = ui.Menu{};
         self.menu.init();
+
+        self.sceneWindow = ui.SceneWindow{};
+        self.sceneWindow.init();
+
+        self.propertyWindow = ui.PropertiesWindow{};
+        self.propertyWindow.init();
 
         self.camera = raylib.Camera3D{
             .position = raylib.Vector3.init(20, 25, 20),
@@ -23,9 +31,12 @@ pub const Editor = struct {
     }
 
     pub fn update(self: *Editor) !void {
-        const handled = self.menu.update();
+        var handled = self.menu.update();
+        handled = self.sceneWindow.update() or handled;
+        handled = self.propertyWindow.update() or handled;
+
         if (self.state == EditorState.Editing) {
-            if (!handled and raylib.isMouseButtonReleased(.left)) {
+            if (!handled and mouseInEditorWindow() and raylib.isMouseButtonReleased(.left)) {
                 self.state = EditorState.Interacting;
                 raylib.hideCursor();
             }
@@ -36,6 +47,11 @@ pub const Editor = struct {
                 raylib.showCursor();
             }
         }
+    }
+
+    fn mouseInEditorWindow() bool {
+        const mouse = raylib.getMousePosition();
+        return raylib.checkCollisionPointRec(mouse, raylib.Rectangle{ .x = ui.Constants.SceneWidth, .y = ui.Constants.MenuHeightf, .height = @as(f32, @floatFromInt(raylib.getScreenHeight())) - ui.Constants.MenuHeightf, .width = @as(f32, @floatFromInt(raylib.getScreenWidth())) - (ui.Constants.SceneWidth * 2) });
     }
 
     pub fn draw(self: *Editor) void {
@@ -51,6 +67,8 @@ pub const Editor = struct {
             raylib.drawGrid(100, 10);
         }
         self.menu.draw();
+        self.sceneWindow.draw();
+        self.propertyWindow.draw();
 
         if (self.state == EditorState.Interacting) {
             _ = raygui.guiStatusBar(raylib.Rectangle{ .x = 0.0, .y = self.h - 25.0, .height = 25.0, .width = self.w }, "Press ESC to edit.");
