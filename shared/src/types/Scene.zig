@@ -34,7 +34,7 @@ pub const Scene = struct {
 
         const cwd = std.fs.cwd();
         const allocator = std.heap.page_allocator;
-        const filename = try std.fmt.allocPrint(allocator, "map/{s}.scn", .{scene_name});
+        const filename = try std.fmt.allocPrint(allocator, "resources/map/{s}.scn", .{scene_name});
 
         const file = cwd.openFile(filename, std.fs.File.OpenFlags{}) catch |err| {
             std.debug.print("Error opening file: {}\n", .{err});
