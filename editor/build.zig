@@ -45,6 +45,14 @@ pub fn build(b: *std.Build) !void {
         return;
     }
 
+    const shared = b.addModule("shared", .{
+        .root_source_file = b.path("../shared/src/root.zig"),
+    });
+
+    shared.addImport("raylib", raylib);
+
+    shared.addImport("raygui", raygui);
+
     // const lib = b.addStaticLibrary(.{
     //     .name = "editor",
     //     // In this case the main source file is merely a path, however, in more
@@ -73,6 +81,7 @@ pub fn build(b: *std.Build) !void {
     exe.root_module.addImport("raylib", raylib);
     exe.root_module.addImport("raygui", raygui);
 
+    exe.root_module.addImport("shared", shared);
     // This *creates* a Run step in the build graph, to be executed when another
     // step is evaluated that depends on it. The next line below will establish
     // such a dependency.

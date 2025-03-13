@@ -1,6 +1,8 @@
 const raylib = @import("raylib");
 const raygui = @import("raygui");
 const ui = @import("ui/_ui.zig");
+const shared = @import("shared");
+const types = shared.types;
 
 pub const Editor = struct {
     state: EditorState = .Editing,
@@ -9,6 +11,9 @@ pub const Editor = struct {
     menu: ui.Menu = undefined,
     sceneWindow: ui.SceneWindow = undefined,
     propertyWindow: ui.PropertiesWindow = undefined,
+    currentScene: types.Scene = undefined,
+    sceneLoadded: bool = false,
+
     w: f32 = 1280.0,
     h: f32 = 720.0,
     pub fn init(self: *Editor) void {
@@ -66,6 +71,11 @@ pub const Editor = struct {
 
             raylib.drawGrid(100, 10);
         }
+
+        if (self.sceneLoadded) {
+            self.currentScene.draw();
+        }
+
         self.menu.draw();
         self.sceneWindow.draw();
         self.propertyWindow.draw();
