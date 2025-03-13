@@ -12,7 +12,7 @@ The main purpose of this project is to teach myself zig. Because of this, do not
 
 ## Building
 
-Project currently uses zig v0.13
+Project currently uses zig v0.14
 
 The game project is in the [game](./game/) folder, do a **zig build run** there.
 

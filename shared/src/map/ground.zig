@@ -45,7 +45,7 @@ pub fn SaveGroundSectorToFile(scene_name: []u8, sector: types.GroundSector) anye
 pub fn LoadGroundSectorFromFile(scene_name: []u8, x: i32, z: i32) !?types.GroundSector {
     const cwd = std.fs.cwd();
     const allocator = std.heap.page_allocator;
-    const filename = std.fmt.allocPrint(allocator, "map/{s}_{}_{}.gs", .{ scene_name, x, z }) catch |err| {
+    const filename = std.fmt.allocPrint(allocator, "resources/map/{s}_{}_{}.gs", .{ scene_name, x, z }) catch |err| {
         std.debug.print("Error allocating filename: {}\n", .{err});
         return null;
     };
