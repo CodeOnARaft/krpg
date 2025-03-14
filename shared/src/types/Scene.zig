@@ -22,6 +22,7 @@ pub const Scene = struct {
     loadedNPCs: ArrayList(types.GameObjects.NPC) = undefined,
     startLocation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     currentTrigger: *types.Trigger = types.emptyTriggerPtr,
+    camera: *raylib.Camera3D = undefined,
 
     pub fn new() !Scene {
         const blankName = try util.string.constU8toU8("_blank");
@@ -109,45 +110,33 @@ pub const Scene = struct {
 
                 std.debug.print("Loaded sector: {} {}\n", .{ sector.?.gridX, sector.?.gridZ });
                 try scene.loadedSectors.append(sector.?);
+
+                try types.GameObjects.NPC.load(scene_name, x, z, &scene);
             }
         }
 
         const startLocationY = scene.getYValueBasedOnLocation(scene.startLocation.x, scene.startLocation.z);
         scene.startLocation = raylib.Vector3{ .x = scene.startLocation.x, .y = startLocationY, .z = scene.startLocation.z };
 
-        var mary: types.GameObjects.NPC = types.GameObjects.NPC{
-            .name = @constCast("Mary"),
-            .position = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
-            .active = true,
-        };
-
-        const textureFilename = try std.fmt.allocPrint(allocator, "{s}/npc.png", .{shared.settings.gameSettings.resourceDirectory});
-        defer allocator.free(textureFilename);
-
-        const fff = try shared.utility.string.toSentinelConstU8(allocator, textureFilename);
-        mary.texture = try raylib.loadTexture(std.mem.span(fff));
-        mary.setTriggerType(types.TriggerTypes.Conversation);
-        const maryY = scene.getYValueBasedOnLocation(20, 20);
-        mary.setPosition(20, maryY, 20);
-        try scene.loadedNPCs.append(mary);
-
         return scene;
     }
 
     pub fn resetCameraPosition(self: *Scene, camera: *raylib.Camera) void {
-        const y = self.GetYValueBasedOnLocation(self.startLocation.x, self.startLocation.z);
+        const y = self.getYValueBasedOnLocation(self.startLocation.x, self.startLocation.z);
         camera.position = raylib.Vector3{ .x = self.startLocation.x, .y = y, .z = self.startLocation.z };
         camera.target = raylib.Vector3{ .x = self.startLocation.x + 1, .y = y, .z = self.startLocation.z + 1 };
     }
 
     pub fn updateCameraPosition(self: *Scene, camera: *raylib.Camera) void {
-        const y = self.GetYValueBasedOnLocation(camera.position.x, camera.position.z);
+        const y = self.getYValueBasedOnLocation(camera.position.x, camera.position.z);
         camera.target.y = camera.target.y + (y - camera.position.y);
         camera.position.y = y;
     }
 
     pub fn getYValueBasedOnLocation(self: *Scene, x: f32, z: f32) f32 {
+        // std.debug.print("Getting y value for x: {} z: {}\n", .{ x, z });
         if (self.loadedSectors.items.len == 0 or x <= 0 or z <= 0) {
+            std.debug.print("No sectors loaded ({},{})\n", .{ x, z });
             return 0.0;
         }
 
@@ -165,7 +154,9 @@ pub const Scene = struct {
         for (0..self.loadedSectors.items.len) |index| {
             var sector = self.loadedSectors.items[index];
             if (sector.gridX == tilex and sector.gridZ == tilez) {
-                return sector.GetYValueBasedOnLocation(x, z);
+                const newY = sector.GetYValueBasedOnLocation(x, z);
+                //std.debug.print("Found sector for x: {} z: {} y: {}\n", .{ x, z, newY });
+                return newY;
             }
         }
 
@@ -193,8 +184,9 @@ pub const Scene = struct {
         }
 
         var i: usize = 0;
+        const camera: raylib.Camera3D = self.camera.*;
         while (i < self.loadedNPCs.items.len) : (i += 1) {
-            self.loadedNPCs.items[i].draw(util.camera);
+            self.loadedNPCs.items[i].draw(camera);
         }
 
         if (shared.settings.gameSettings.editing) {

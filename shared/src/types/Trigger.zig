@@ -19,14 +19,15 @@ pub const Trigger = struct {
     type: TriggerTypes = TriggerTypes.Empty,
     boundingBox: raylib.BoundingBox = undefined,
     position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
-    size: f32 = 0.1,
+    size: f32 = 0.4,
+    size_height: f32 = 0.8,
     description: []u8 = undefined,
 
     pub fn setPosition(self: *Trigger, x: f32, y: f32, z: f32) void {
         self.position = raylib.Vector3{ .x = x, .y = y, .z = z };
         self.boundingBox = raylib.BoundingBox{
-            .min = raylib.Vector3{ .x = x - self.size, .y = y - self.size, .z = z - self.size },
-            .max = raylib.Vector3{ .x = x + self.size, .y = y + self.size, .z = z + self.size },
+            .min = raylib.Vector3{ .x = x - self.size, .y = y - self.size_height, .z = z - self.size },
+            .max = raylib.Vector3{ .x = x + self.size, .y = y + self.size_height, .z = z + self.size },
         };
     }
 

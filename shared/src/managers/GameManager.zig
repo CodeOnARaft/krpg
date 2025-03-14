@@ -32,6 +32,7 @@ pub const GameManager = struct {
         }
 
         self.currentScene = loadedScene.?;
+        self.currentScene.camera = self.camera;
         self.currentScene.resetCameraPosition(self.camera);
 
         self.player = types.GameObjects.Player{};
@@ -64,7 +65,7 @@ pub const GameManager = struct {
             self.camera.up = raylib.Vector3.init(0, 1, 0);
 
             if (!util.vector3.areEqual(self.camera.position, self.oldCameraPosition)) {
-                self.currentScene.UpdateCameraPosition(self.camera);
+                self.currentScene.updateCameraPosition(self.camera);
                 self.oldCameraPosition = self.camera.position;
             }
         }
@@ -84,7 +85,7 @@ pub const GameManager = struct {
             // Draw ground
             self.currentScene.draw();
 
-            raylib.drawModel(self.model, raylib.Vector3{ .x = 12, .y = self.currentScene.GetYValueBasedOnLocation(12, 12) + 1.5, .z = 12 }, 0.5, raylib.Color.white); // Draw 3d model with texture
+            //  raylib.drawModel(self.model, raylib.Vector3{ .x = 25, .y = self.currentScene.getYValueBasedOnLocation(25, 25) + 1.5, .z = 25 }, 0.5, raylib.Color.white); // Draw 3d model with texture
         }
 
         self.drawUI();

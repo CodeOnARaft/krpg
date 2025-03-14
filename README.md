@@ -26,6 +26,7 @@ The editor project is in the [editor](./editor/) folder, do a **zig build run** 
 |Mouse|Look|
 | e| interact|
 |~|Console|
+|F5|Turn on/off Debug|
 
 ### Console comands 
 |Control| Function|

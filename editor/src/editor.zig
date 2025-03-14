@@ -39,12 +39,15 @@ pub const Editor = struct {
             .projection = .perspective,
         };
 
+        util.camera = self.camera;
+
         const basicScene = try util.string.constU8toU8("overworld");
         const testScene = try types.Scene.load(basicScene);
 
         if (testScene != null) {
             self.currentScene = testScene.?;
             self.sceneLoaded = true;
+            self.currentScene.camera = &self.camera;
         }
     }
 
