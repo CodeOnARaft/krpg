@@ -1,4 +1,4 @@
 npc mary
 mobile 0
 type 0
-texture resources/npc.png
+texture npc.png

@@ -34,10 +34,11 @@ pub const Scene = struct {
 
         const cwd = std.fs.cwd();
         const allocator = std.heap.page_allocator;
-        const filename = try std.fmt.allocPrint(allocator, "resources/map/{s}.scn", .{scene_name});
+        const filename = try std.fmt.allocPrint(allocator, "{s}/map/{s}.scn", .{ shared.settings.gameSettings.resourceDirectory, scene_name });
+        defer allocator.free(filename);
 
         const file = cwd.openFile(filename, std.fs.File.OpenFlags{}) catch |err| {
-            std.debug.print("Error opening file: {}\n", .{err});
+            std.debug.print("Error opening file: {s},{}\n", .{ filename, err });
             return scene;
         };
         defer file.close();
@@ -116,7 +117,12 @@ pub const Scene = struct {
             .position = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
             .active = true,
         };
-        mary.texture = try raylib.loadTexture("resources/npc.png");
+
+        const textureFilename = try std.fmt.allocPrint(allocator, "{s}/npc.png", .{shared.settings.gameSettings.resourceDirectory});
+        defer allocator.free(textureFilename);
+
+        const fff = try shared.utility.string.toSentinelConstU8(allocator, textureFilename);
+        mary.texture = try raylib.loadTexture(std.mem.span(fff));
         mary.setTriggerType(types.TriggerTypes.Conversation);
         //const marytextureheight: f32 = @floatFromInt(mary.texture.height);
         const maryY = scene.GetYValueBasedOnLocation(10, 10);
@@ -173,6 +179,7 @@ pub const Scene = struct {
         }
     }
     pub fn draw(self: *Scene) void {
+        //std.debug.print("Drawing scene {}\n", .{self.loadedSectors.items.len});
         for (0..self.loadedSectors.items.len) |index| {
             self.loadedSectors.items[index].draw();
         }
@@ -184,6 +191,10 @@ pub const Scene = struct {
     }
 
     pub fn drawUI(self: *Scene) void {
+        if (shared.settings.gameSettings.editing) {
+            return;
+        }
+
         var i: usize = 0;
         while (i < self.loadedNPCs.items.len) : (i += 1) {
             if (self.loadedNPCs.items[i].trigger.checkCollision(util.getViewingRay())) {

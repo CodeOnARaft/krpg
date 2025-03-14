@@ -6,12 +6,12 @@ pub fn main() anyerror!void {
     raylib.initWindow(1280, 720, "krpg Editor");
     defer raylib.closeWindow();
 
-    raylib.setExitKey(.null);
-
+    raylib.setExitKey(.f10);
+    raylib.toggleFullscreen();
     raygui.guiLoadStyle("resources/style_cyber.rgs");
 
     var editor = Editor.Editor{};
-    editor.init();
+    try editor.init();
 
     while (!raylib.windowShouldClose()) {
         try editor.update();

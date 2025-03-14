@@ -45,7 +45,7 @@ pub fn SaveGroundSectorToFile(scene_name: []u8, sector: types.GroundSector) anye
 pub fn LoadGroundSectorFromFile(scene_name: []u8, x: i32, z: i32) !?types.GroundSector {
     const cwd = std.fs.cwd();
     const allocator = std.heap.page_allocator;
-    const filename = std.fmt.allocPrint(allocator, "resources/map/{s}_{}_{}.gs", .{ scene_name, x, z }) catch |err| {
+    const filename = std.fmt.allocPrint(allocator, "{s}/map/{s}_{}_{}.gs", .{ shared.settings.gameSettings.resourceDirectory, scene_name, x, z }) catch |err| {
         std.debug.print("Error allocating filename: {}\n", .{err});
         return null;
     };
@@ -96,13 +96,6 @@ pub fn LoadGroundSectorFromFile(scene_name: []u8, x: i32, z: i32) !?types.Ground
         const center = raylib.Vector3.init(p9, p10, p11);
         const normal = raylib.Vector3.init(p12, p13, p14);
         const color = raylib.Color.init(p15, p16, p17, 255);
-
-        // const a = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[0]), std.fmt.parseFloat(f32, parts.items[1]), std.fmt.parseFloat(f32, parts.items[2]));
-        // const b = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[3]), std.fmt.parseFloat(f32, parts.items[4]), std.fmt.parseFloat(f32, parts.items[5]));
-        // const c = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[6]), std.fmt.parseFloat(f32, parts.items[7]), std.fmt.parseFloat(f32, parts.items[8]));
-        // const center = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[9]), std.fmt.parseFloat(f32, parts.items[10]), std.fmt.parseFloat(f32, parts.items[11]));
-        // const normal = raylib.Vector3.init(std.fmt.parseFloat(f32, parts.items[12]), std.fmt.parseFloat(f32, parts.items[13]), std.fmt.parseFloat(f32, parts.items[14]));
-        // const color = raylib.Color.init(std.fmt.parseInt(parts.items[15]), std.fmt.parseInt(parts.items[16]), std.fmt.parseInt(parts.items[17]), 255);
 
         const triangle = basic.Triangle{
             .a = a,

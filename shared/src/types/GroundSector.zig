@@ -1,3 +1,4 @@
+const std = @import("std");
 const raylib = @import("raylib");
 const shared = @import("../root.zig");
 const types = shared.types;
@@ -113,6 +114,7 @@ pub const GroundSector = struct {
     }
 
     pub fn draw(self: *GroundSector) void {
+        // std.debug.print("Drawing scene {}\n", .{self.triangles.len});
         for (self.triangles) |triangle| {
             raylib.drawTriangle3D(triangle.a, triangle.b, triangle.c, triangle.color);
         }

@@ -22,6 +22,8 @@ pub const GameManager = struct {
 
         self.oldCameraPosition = self.camera.position;
 
+        try shared.settings.gameSettings.init();
+
         const basicScene = try util.string.constU8toU8("overworld");
         const loadedScene = try types.Scene.load(basicScene);
         if (loadedScene == null) {
@@ -56,7 +58,6 @@ pub const GameManager = struct {
             self.console.consoleToggle();
         }
 
-        shared.settings.gameSettings.update();
         self.player.update();
 
         if (!shared.settings.gameSettings.paused) {

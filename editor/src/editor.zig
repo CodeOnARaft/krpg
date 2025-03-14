@@ -1,8 +1,10 @@
+const std = @import("std");
 const raylib = @import("raylib");
 const raygui = @import("raygui");
 const ui = @import("ui/_ui.zig");
 const shared = @import("shared");
 const types = shared.types;
+const util = shared.utility;
 
 pub const Editor = struct {
     state: EditorState = .Editing,
@@ -12,13 +14,16 @@ pub const Editor = struct {
     sceneWindow: ui.SceneWindow = undefined,
     propertyWindow: ui.PropertiesWindow = undefined,
     currentScene: types.Scene = undefined,
-    sceneLoadded: bool = false,
+    sceneLoaded: bool = false,
 
     w: f32 = 1280.0,
     h: f32 = 720.0,
-    pub fn init(self: *Editor) void {
+    pub fn init(self: *Editor) !void {
         self.menu = ui.Menu{};
         self.menu.init();
+
+        try shared.settings.gameSettings.init();
+        shared.settings.gameSettings.editing = true;
 
         self.sceneWindow = ui.SceneWindow{};
         self.sceneWindow.init();
@@ -33,6 +38,14 @@ pub const Editor = struct {
             .fovy = 60,
             .projection = .perspective,
         };
+
+        const basicScene = try util.string.constU8toU8("overworld");
+        const testScene = try types.Scene.load(basicScene);
+
+        if (testScene != null) {
+            self.currentScene = testScene.?;
+            self.sceneLoaded = true;
+        }
     }
 
     pub fn update(self: *Editor) !void {
@@ -68,12 +81,10 @@ pub const Editor = struct {
         {
             self.camera.begin();
             defer self.camera.end();
-
+            if (self.sceneLoaded) {
+                self.currentScene.draw();
+            }
             raylib.drawGrid(100, 10);
-        }
-
-        if (self.sceneLoadded) {
-            self.currentScene.draw();
         }
 
         self.menu.draw();
