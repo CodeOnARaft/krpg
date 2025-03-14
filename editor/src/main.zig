@@ -7,7 +7,7 @@ pub fn main() anyerror!void {
     defer raylib.closeWindow();
 
     raylib.setExitKey(.f10);
-    raylib.toggleFullscreen();
+    // raylib.toggleFullscreen();
     raygui.guiLoadStyle("resources/style_cyber.rgs");
 
     var editor = Editor.Editor{};

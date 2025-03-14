@@ -32,8 +32,7 @@ pub const GameManager = struct {
         }
 
         self.currentScene = loadedScene.?;
-
-        self.currentScene.UpdateCameraPosition(self.camera);
+        self.currentScene.resetCameraPosition(self.camera);
 
         self.player = types.GameObjects.Player{};
         self.player.init(self);

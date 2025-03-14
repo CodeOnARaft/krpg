@@ -64,11 +64,11 @@ pub const Scene = struct {
 
             std.debug.print("Command: {s}: length: {}\n", .{ parts.items[0], parts.items.len });
             if (std.mem.eql(u8, parts.items[0], "start")) {
-                std.debug.print("Start location\n", .{});
+                // std.debug.print("Start location\n", .{});
 
-                std.debug.print("Parts: {s}\n", .{parts.items[1]});
-                std.debug.print("Parts: {s}\n", .{parts.items[2]});
-                std.debug.print("Parts: {s}\n", .{parts.items[3]});
+                // std.debug.print("Parts: {s}\n", .{parts.items[1]});
+                // std.debug.print("Parts: {s}\n", .{parts.items[2]});
+                // std.debug.print("Parts: {s}\n", .{parts.items[3]});
 
                 const startx = std.fmt.parseFloat(f32, parts.items[1]) catch |err| {
                     std.debug.print("Error parsing x: {}\n", .{err});
@@ -112,6 +112,9 @@ pub const Scene = struct {
             }
         }
 
+        const startLocationY = scene.getYValueBasedOnLocation(scene.startLocation.x, scene.startLocation.z);
+        scene.startLocation = raylib.Vector3{ .x = scene.startLocation.x, .y = startLocationY, .z = scene.startLocation.z };
+
         var mary: types.GameObjects.NPC = types.GameObjects.NPC{
             .name = @constCast("Mary"),
             .position = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
@@ -124,21 +127,26 @@ pub const Scene = struct {
         const fff = try shared.utility.string.toSentinelConstU8(allocator, textureFilename);
         mary.texture = try raylib.loadTexture(std.mem.span(fff));
         mary.setTriggerType(types.TriggerTypes.Conversation);
-        //const marytextureheight: f32 = @floatFromInt(mary.texture.height);
-        const maryY = scene.GetYValueBasedOnLocation(10, 10);
-        mary.setPosition(10, maryY, 10);
+        const maryY = scene.getYValueBasedOnLocation(20, 20);
+        mary.setPosition(20, maryY, 20);
         try scene.loadedNPCs.append(mary);
 
         return scene;
     }
 
-    pub fn UpdateCameraPosition(self: *Scene, camera: *raylib.Camera) void {
+    pub fn resetCameraPosition(self: *Scene, camera: *raylib.Camera) void {
+        const y = self.GetYValueBasedOnLocation(self.startLocation.x, self.startLocation.z);
+        camera.position = raylib.Vector3{ .x = self.startLocation.x, .y = y, .z = self.startLocation.z };
+        camera.target = raylib.Vector3{ .x = self.startLocation.x + 1, .y = y, .z = self.startLocation.z + 1 };
+    }
+
+    pub fn updateCameraPosition(self: *Scene, camera: *raylib.Camera) void {
         const y = self.GetYValueBasedOnLocation(camera.position.x, camera.position.z);
         camera.target.y = camera.target.y + (y - camera.position.y);
         camera.position.y = y;
     }
 
-    pub fn GetYValueBasedOnLocation(self: *Scene, x: f32, z: f32) f32 {
+    pub fn getYValueBasedOnLocation(self: *Scene, x: f32, z: f32) f32 {
         if (self.loadedSectors.items.len == 0 or x <= 0 or z <= 0) {
             return 0.0;
         }
@@ -187,6 +195,11 @@ pub const Scene = struct {
         var i: usize = 0;
         while (i < self.loadedNPCs.items.len) : (i += 1) {
             self.loadedNPCs.items[i].draw(util.camera);
+        }
+
+        if (shared.settings.gameSettings.editing) {
+            const y = self.getYValueBasedOnLocation(self.startLocation.x, self.startLocation.z) + 1;
+            raylib.drawSphere(raylib.Vector3{ .x = self.startLocation.x, .y = y, .z = self.startLocation.z }, 1, raylib.Color.red);
         }
     }
 
