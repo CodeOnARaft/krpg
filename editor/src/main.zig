@@ -10,11 +10,11 @@ pub fn main() anyerror!void {
     // raylib.toggleFullscreen();
     raygui.guiLoadStyle("resources/style_cyber.rgs");
 
-    var editor = Editor.Editor{};
+    var editor = Editor.EditorWindow{};
     try editor.init();
 
     while (!raylib.windowShouldClose()) {
         try editor.update();
-        editor.draw();
+        try editor.draw();
     }
 }
