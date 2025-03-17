@@ -16,8 +16,7 @@ pub const Menu = struct {
     pub fn update(self: *Menu) bool {
         const mouse = raylib.getMousePosition();
         if (raylib.isMouseButtonReleased(.left) and raylib.checkCollisionPointRec(mouse, raylib.Rectangle{ .x = 5, .y = 5, .height = 16, .width = 16 })) {
-            self.editor.ofd.open = true;
-            self.editor.module = true;
+            try self.editor.openFile();
             return true;
         }
 

@@ -16,7 +16,7 @@ const SceneTypes = enum {
 };
 
 pub const Scene = struct {
-    id: []u8 = undefined,
+    id: []const u8 = undefined,
     sceneType: SceneTypes = SceneTypes.Blank,
     loadedSectors: ArrayList(types.GroundSector) = undefined,
     loadedNPCs: ArrayList(types.GameObjects.NPC) = undefined,
@@ -29,7 +29,7 @@ pub const Scene = struct {
         return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(std.heap.page_allocator), .loadedNPCs = ArrayList(types.GameObjects.NPC).init(std.heap.page_allocator) };
     }
 
-    pub fn load(scene_name: []u8) !?Scene {
+    pub fn load(scene_name: []const u8) !?Scene {
         var scene = try new();
         scene.currentTrigger = types.emptyTriggerPtr;
 

@@ -9,7 +9,7 @@ const util = shared.utility;
 pub const EditorWindow = struct {
     state: EditorState = .Editing,
     camera: raylib.Camera3D = undefined,
-    openFile: bool = false,
+    // openFile: bool = false,
     menu: ui.Menu = undefined,
     sceneWindow: ui.SceneWindow = undefined,
     propertyWindow: ui.PropertiesWindow = undefined,
@@ -43,14 +43,14 @@ pub const EditorWindow = struct {
 
         util.camera = self.camera;
 
-        const basicScene = try util.string.constU8toU8("overworld");
-        const testScene = try types.Scene.load(basicScene);
+        // const basicScene = try util.string.constU8toU8("overworld");
+        // const testScene = try types.Scene.load(basicScene);
 
-        if (testScene != null) {
-            self.currentScene = testScene.?;
-            self.sceneLoaded = true;
-            self.currentScene.camera = &self.camera;
-        }
+        // if (testScene != null) {
+        //     self.currentScene = testScene.?;
+        //     self.sceneLoaded = true;
+        //     self.currentScene.camera = &self.camera;
+        // }
 
         self.ofd = ui.dialog.OpenFileDialog{};
         try self.ofd.init(self);
@@ -116,6 +116,21 @@ pub const EditorWindow = struct {
         }
         if (self.module and self.ofd.open) {
             try self.ofd.draw();
+        }
+    }
+
+    pub fn openFile(self: *EditorWindow) !void {
+        self.module = true;
+        try self.ofd.openDialog(&openFileCallback);
+    }
+
+    pub fn openFileCallback(dialog: *ui.dialog.OpenFileDialog, file: []const u8) anyerror!void {
+        dialog.editor.module = false;
+
+        const testScene = try types.Scene.load(file);
+        if (testScene != null) {
+            dialog.editor.currentScene = testScene.?;
+            dialog.editor.sceneLoaded = true;
         }
     }
 };

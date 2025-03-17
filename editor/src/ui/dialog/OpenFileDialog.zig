@@ -1,4 +1,5 @@
 const std = @import("std");
+const ArrayList = std.ArrayList;
 const raylib = @import("raylib");
 const raygui = @import("raygui");
 const ui = @import("../_ui.zig");
@@ -14,9 +15,14 @@ pub const OpenFileDialog = struct {
     editor: *EditorWindow = undefined,
     currentDirectory: std.fs.Dir = undefined,
     currentDirectoryName: [:0]const u8 = undefined,
+    currentDirectoryFileCount: f32 = 0,
+    currentDirectoryDirCount: f32 = 0,
+    dblClickTime: f32 = 0.0,
 
     scrollDirectoriesV2: raylib.Vector2 = raylib.Vector2{ .x = 0, .y = 0 },
     scrollFilesV2: raylib.Vector2 = raylib.Vector2{ .x = 0, .y = 0 },
+
+    callBackFunction: *const fn (*OpenFileDialog, []const u8) anyerror!void = undefined,
 
     pub fn init(self: *OpenFileDialog, editor: *EditorWindow) !void {
         self.editor = editor;
@@ -28,10 +34,13 @@ pub const OpenFileDialog = struct {
         const y = (ui.Constants.WINDOW_HEIGHTf - ui.Constants.OFD_HEIGHTf) / 2;
         self.location = raylib.Rectangle{ .x = x, .y = y, .width = ui.Constants.OFD_WIDTHf, .height = ui.Constants.OFD_HEIGHTf };
 
-        const cwd = std.fs.cwd();
-        self.currentDirectory = try cwd.openDir(shared.settings.gameSettings.resourceDirectory, std.fs.Dir.OpenOptions{ .iterate = true });
+        self.currentDirectory = std.fs.cwd();
+        try self.changeSubDirectory(shared.settings.gameSettings.resourceDirectory);
+    }
 
-        try self.setDirectoryText();
+    pub fn openDialog(self: *OpenFileDialog, callBackFunction: *const fn (*OpenFileDialog, []const u8) anyerror!void) !void {
+        self.open = true;
+        self.callBackFunction = callBackFunction;
     }
 
     pub fn setDirectoryText(self: *OpenFileDialog) !void {
@@ -53,6 +62,8 @@ pub const OpenFileDialog = struct {
         }
 
         handled = true;
+
+        self.dblClickTime += raylib.getFrameTime();
         return handled;
     }
 
@@ -79,50 +90,132 @@ pub const OpenFileDialog = struct {
             self.editor.module = false;
         }
     }
+    fn changeSubDirectory(self: *OpenFileDialog, name: []const u8) !void {
+        self.currentDirectory = try self.currentDirectory.openDir(name, std.fs.Dir.OpenOptions{ .iterate = true });
+        try self.setDirectoryText();
 
-    pub fn drawDirectories(self: *OpenFileDialog) !void {
-        const width = ui.Constants.OFD_WIDTHf * 0.4;
-        var rec2 = raylib.Rectangle{ .x = self.location.x + 10.0, .y = self.location.y + 50.0, .height = self.location.height - 60.0, .width = width };
-
-        if (raygui.guiScrollPanel(rec2, "Scene", rec2, &self.scrollDirectoriesV2, &rec2) > 0) {}
+        self.currentDirectoryFileCount = 0;
+        self.currentDirectoryDirCount = 1;
 
         var iter = self.currentDirectory.iterate();
-        var yy: f32 = 20;
+
         while (try iter.next()) |entry| {
-            if (entry.kind == .directory) {
-                //std.debug.print("File {s} ({})\n", .{ entry.name, entry.kind });
-                const fileLocation = raylib.Rectangle{ .x = self.location.x + 10, .y = self.location.y + 50 + yy, .width = width, .height = 20 };
-
-                const buffer = try allocator.allocSentinel(u8, entry.name.len, 0);
-                std.mem.copyForwards(u8, buffer[0..entry.name.len], entry.name);
-
-                if (raygui.guiButton(fileLocation, buffer) > 0) {}
-                allocator.free(buffer);
-                yy = yy + 20;
+            if (entry.kind == .file) {
+                self.currentDirectoryFileCount += 1;
+            } else if (entry.kind == .directory) {
+                self.currentDirectoryDirCount += 1;
             }
         }
     }
+    pub fn drawDirectories(self: *OpenFileDialog) !void {
+        const mousePos = raylib.getMousePosition();
+        const width = ui.Constants.OFD_WIDTHf * 0.4;
+        var rec2 = raylib.Rectangle{ .x = self.location.x + 10.0, .y = self.location.y + 50.0, .height = self.location.height - 60.0, .width = width };
 
-    pub fn drawFiles(self: *OpenFileDialog) !void {
-        const xwidth = ui.Constants.OFD_WIDTHf * 0.4;
-        const width = ui.Constants.OFD_WIDTHf - 20 - xwidth;
-        var rec2 = raylib.Rectangle{ .x = self.location.x + 10 + xwidth, .y = self.location.y + 50.0, .height = self.location.height - 60.0, .width = width };
-        if (raygui.guiScrollPanel(rec2, "Scene", rec2, &self.scrollDirectoriesV2, &rec2) > 0) {}
+        const contentHeight: f32 = self.currentDirectoryDirCount * 20;
+        const contentRec = raylib.Rectangle{ .x = self.location.x + 10.0, .y = self.location.y + 50.0, .height = contentHeight, .width = width };
+        if (raygui.guiScrollPanel(rec2, "Directories", contentRec, &self.scrollDirectoriesV2, &rec2) > 0) {
+            std.debug.print("Scrolling {}\n", .{self.scrollDirectoriesV2.y});
+        }
+
+        raylib.beginScissorMode(@as(i32, @intFromFloat(rec2.x)), @as(i32, @intFromFloat(rec2.y)), @as(i32, @intFromFloat(rec2.width)), @as(i32, @intFromFloat(rec2.height)));
 
         var iter = self.currentDirectory.iterate();
-        var yy: f32 = 20;
+        var yy: f32 = 40 + self.scrollDirectoriesV2.y;
+        const directoryX = self.location.x + 15;
+
+        var location = raylib.Rectangle{ .x = directoryX, .y = self.location.y + 75 + self.scrollDirectoriesV2.y, .width = width, .height = 20 };
+        _ = raygui.guiLabel(location, "..");
+        if (raylib.checkCollisionPointRec(mousePos, rec2) and self.testDoubleClick(location)) {
+            try self.changeSubDirectory("..");
+        }
+
         while (try iter.next()) |entry| {
-            //std.debug.print("File {s} ({})\n", .{ entry.name, entry.kind });
-            if (entry.kind == .file) {
-                const fileLocation = raylib.Rectangle{ .x = self.location.x + 10 + xwidth, .y = self.location.y + 50 + yy, .width = width, .height = 20 };
+            if (entry.kind == .directory) {
+                location = raylib.Rectangle{ .x = directoryX, .y = self.location.y + 55 + yy, .width = width, .height = 20 };
 
                 const buffer = try allocator.allocSentinel(u8, entry.name.len, 0);
                 std.mem.copyForwards(u8, buffer[0..entry.name.len], entry.name);
 
-                if (raygui.guiButton(fileLocation, buffer) > 0) {}
+                if (raylib.checkCollisionPointRec(mousePos, rec2) and self.testDoubleClick(location)) {
+                    try self.changeSubDirectory(entry.name);
+                }
+
+                if (raygui.guiLabel(location, buffer) > 0) {}
                 allocator.free(buffer);
                 yy = yy + 20;
             }
         }
+
+        raylib.endScissorMode();
+    }
+
+    pub fn drawFiles(self: *OpenFileDialog) !void {
+        const mousePos = raylib.getMousePosition();
+        const xwidth = ui.Constants.OFD_WIDTHf * 0.4;
+        const width = ui.Constants.OFD_WIDTHf - 20 - xwidth;
+        const contentHeight: f32 = self.currentDirectoryFileCount * 20;
+        const contentRec = raylib.Rectangle{ .x = self.location.x + 20 + xwidth, .y = self.location.y + 50.0, .height = contentHeight, .width = width };
+        var rec2 = raylib.Rectangle{ .x = self.location.x + 20 + xwidth, .y = self.location.y + 50.0, .height = self.location.height - 60.0, .width = width };
+        if (raygui.guiScrollPanel(rec2, "Files", contentRec, &self.scrollFilesV2, &rec2) > 0) {}
+
+        var iter = self.currentDirectory.iterate();
+        var yy: f32 = 20 + self.scrollFilesV2.y;
+        const fileX = self.location.x + 25 + xwidth;
+
+        raylib.beginScissorMode(@as(i32, @intFromFloat(rec2.x)), @as(i32, @intFromFloat(rec2.y)), @as(i32, @intFromFloat(rec2.width)), @as(i32, @intFromFloat(rec2.height)));
+
+        while (try iter.next()) |entry| {
+            //std.debug.print("File {s} ({})\n", .{ entry.name, entry.kind });
+            if (entry.kind == .file) {
+                const fileLocation = raylib.Rectangle{ .x = fileX, .y = self.location.y + 55 + yy, .width = width, .height = 20 };
+
+                const buffer = try allocator.allocSentinel(u8, entry.name.len, 0);
+                std.mem.copyForwards(u8, buffer[0..entry.name.len], entry.name);
+
+                if (raylib.checkCollisionPointRec(mousePos, rec2) and self.testDoubleClick(fileLocation)) {
+                    // const buffer2 = try allocator.allocSentinel(u8, entry.name.len + self.currentDirectoryName.len + 1, 0);
+                    // std.mem.copyForwards(u8, buffer2[0..self.currentDirectoryName.len], self.currentDirectoryName);
+                    // buffer2[self.currentDirectoryName.len] = '/';
+                    // std.mem.copyForwards(u8, buffer2[self.currentDirectoryName.len + 1 ..], entry.name);
+
+                    var parts: ArrayList([]const u8) = ArrayList([]const u8).init(std.heap.page_allocator);
+                    var it = std.mem.splitScalar(u8, entry.name, '.');
+
+                    while (it.next()) |commandPart| {
+                        try parts.append(commandPart);
+                    }
+
+                    try (self.callBackFunction)(self, parts.items[0]);
+                    self.open = false;
+                    //allocator.free(buffer2);
+                }
+
+                if (raygui.guiLabel(fileLocation, buffer) > 0) {}
+                allocator.free(buffer);
+                yy = yy + 20;
+            }
+        }
+
+        raylib.endScissorMode();
+    }
+
+    pub fn testDoubleClick(self: *OpenFileDialog, rec: raylib.Rectangle) bool {
+        if (!raylib.isMouseButtonReleased(.left)) {
+            return false;
+        }
+
+        if (!raylib.checkCollisionPointRec(raylib.getMousePosition(), rec)) {
+            return false;
+        }
+
+        const testd = self.dblClickTime > 0.5;
+        self.dblClickTime = 0.0;
+
+        if (testd) {
+            return false;
+        }
+
+        return true;
     }
 };

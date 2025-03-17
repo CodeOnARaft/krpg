@@ -36,7 +36,7 @@ pub const NPC = struct {
         }
     }
 
-    pub fn load(scene_name: []u8, x: i32, z: i32, scene: *types.Scene) !void {
+    pub fn load(scene_name: []const u8, x: i32, z: i32, scene: *types.Scene) !void {
         const cwd = std.fs.cwd();
         const allocator = std.heap.page_allocator;
         const filename = std.fmt.allocPrint(allocator, "{s}/map/{s}_{}_{}.npc", .{ shared.settings.gameSettings.resourceDirectory, scene_name, x, z }) catch |err| {
