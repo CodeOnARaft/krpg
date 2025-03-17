@@ -43,15 +43,6 @@ pub const EditorWindow = struct {
 
         util.camera = self.camera;
 
-        // const basicScene = try util.string.constU8toU8("overworld");
-        // const testScene = try types.Scene.load(basicScene);
-
-        // if (testScene != null) {
-        //     self.currentScene = testScene.?;
-        //     self.sceneLoaded = true;
-        //     self.currentScene.camera = &self.camera;
-        // }
-
         self.ofd = ui.dialog.OpenFileDialog{};
         try self.ofd.init(self);
     }
@@ -121,16 +112,20 @@ pub const EditorWindow = struct {
 
     pub fn openFile(self: *EditorWindow) !void {
         self.module = true;
-        try self.ofd.openDialog(&openFileCallback);
+        try self.ofd.openDialog(&openSceneFileCallback);
     }
 
-    pub fn openFileCallback(dialog: *ui.dialog.OpenFileDialog, file: []const u8) anyerror!void {
+    pub fn openSceneFileCallback(dialog: *ui.dialog.OpenFileDialog, file: []const u8) anyerror!void {
         dialog.editor.module = false;
 
-        const testScene = try types.Scene.load(file);
-        if (testScene != null) {
-            dialog.editor.currentScene = testScene.?;
-            dialog.editor.sceneLoaded = true;
+        if (std.mem.endsWith(u8, file, ".scn")) {
+            const testScene = try types.Scene.load(file);
+            if (testScene != null) {
+                dialog.editor.currentScene = testScene.?;
+                dialog.editor.sceneLoaded = true;
+            }
+        } else {
+            std.debug.print("Invalid file type\n", .{});
         }
     }
 };

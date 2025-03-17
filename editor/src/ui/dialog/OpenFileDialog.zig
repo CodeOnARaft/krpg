@@ -179,14 +179,14 @@ pub const OpenFileDialog = struct {
                     // buffer2[self.currentDirectoryName.len] = '/';
                     // std.mem.copyForwards(u8, buffer2[self.currentDirectoryName.len + 1 ..], entry.name);
 
-                    var parts: ArrayList([]const u8) = ArrayList([]const u8).init(std.heap.page_allocator);
-                    var it = std.mem.splitScalar(u8, entry.name, '.');
+                    //var parts: ArrayList([]const u8) = ArrayList([]const u8).init(std.heap.page_allocator);
+                    //var it = std.mem.splitScalar(u8, entry.name, '.');
 
-                    while (it.next()) |commandPart| {
-                        try parts.append(commandPart);
-                    }
+                    // while (it.next()) |commandPart| {
+                    //     try parts.append(commandPart);
+                    // }
 
-                    try (self.callBackFunction)(self, parts.items[0]);
+                    try (self.callBackFunction)(self, entry.name);
                     self.open = false;
                     //allocator.free(buffer2);
                 }

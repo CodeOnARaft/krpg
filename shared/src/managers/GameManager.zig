@@ -24,7 +24,7 @@ pub const GameManager = struct {
 
         try shared.settings.gameSettings.init();
 
-        const basicScene = try util.string.constU8toU8("overworld");
+        const basicScene = try util.string.constU8toU8("overworld.scn");
         const loadedScene = try types.Scene.load(basicScene);
         if (loadedScene == null) {
             self.closeWindow = true;

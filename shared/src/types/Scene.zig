@@ -35,7 +35,8 @@ pub const Scene = struct {
 
         const cwd = std.fs.cwd();
         const allocator = std.heap.page_allocator;
-        const filename = try std.fmt.allocPrint(allocator, "{s}/map/{s}.scn", .{ shared.settings.gameSettings.resourceDirectory, scene_name });
+        const filename = try std.fmt.allocPrint(allocator, "{s}/map/{s}", .{ shared.settings.gameSettings.resourceDirectory, scene_name });
+        std.debug.print("Loading scene: {s}\n", .{filename});
         defer allocator.free(filename);
 
         const file = cwd.openFile(filename, std.fs.File.OpenFlags{}) catch |err| {
@@ -43,6 +44,16 @@ pub const Scene = struct {
             return scene;
         };
         defer file.close();
+
+        var it1 = std.mem.splitScalar(u8, scene_name, '.');
+        var index: i32 = 0;
+        var sc_fn: []const u8 = "";
+        while (it1.next()) |commandPart| {
+            if (index == 0) {
+                sc_fn = commandPart;
+            }
+            index += 1;
+        }
 
         scene.id = scene_name;
 
@@ -65,12 +76,6 @@ pub const Scene = struct {
 
             std.debug.print("Command: {s}: length: {}\n", .{ parts.items[0], parts.items.len });
             if (std.mem.eql(u8, parts.items[0], "start")) {
-                // std.debug.print("Start location\n", .{});
-
-                // std.debug.print("Parts: {s}\n", .{parts.items[1]});
-                // std.debug.print("Parts: {s}\n", .{parts.items[2]});
-                // std.debug.print("Parts: {s}\n", .{parts.items[3]});
-
                 const startx = std.fmt.parseFloat(f32, parts.items[1]) catch |err| {
                     std.debug.print("Error parsing x: {}\n", .{err});
                     return null;
@@ -101,7 +106,7 @@ pub const Scene = struct {
                     return null;
                 };
 
-                const sector = try map.LoadGroundSectorFromFile(scene_name, x, z);
+                const sector = try map.LoadGroundSectorFromFile(sc_fn, x, z);
 
                 if (sector == null) {
                     std.debug.print("Error loading sector: {} {}\n", .{ x, z });
@@ -111,7 +116,7 @@ pub const Scene = struct {
                 std.debug.print("Loaded sector: {} {}\n", .{ sector.?.gridX, sector.?.gridZ });
                 try scene.loadedSectors.append(sector.?);
 
-                try types.GameObjects.NPC.load(scene_name, x, z, &scene);
+                try types.GameObjects.NPC.load(sc_fn, x, z, &scene);
             }
         }
 
