@@ -62,6 +62,8 @@ pub const Scene = struct {
         var buf: [1024]u8 = undefined;
         while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
             var parts: ArrayList([]u8) = ArrayList([]u8).init(std.heap.page_allocator);
+            defer parts.deinit();
+
             var it = std.mem.splitScalar(u8, line, ' ');
 
             while (it.next()) |commandPart| {
@@ -183,7 +185,6 @@ pub const Scene = struct {
         }
     }
     pub fn draw(self: *Scene) void {
-        //std.debug.print("Drawing scene {}\n", .{self.loadedSectors.items.len});
         for (0..self.loadedSectors.items.len) |index| {
             self.loadedSectors.items[index].draw();
         }
