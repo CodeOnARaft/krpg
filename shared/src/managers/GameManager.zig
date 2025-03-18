@@ -14,6 +14,7 @@ pub const GameManager = struct {
     console: types.Console = undefined,
     player: types.GameObjects.Player = undefined,
     model: raylib.Model = undefined,
+    inventory: types.GameObjects.Inventory = undefined,
 
     pub fn initialize(self: *GameManager) !void {
         self.console = types.Console{};
@@ -38,6 +39,9 @@ pub const GameManager = struct {
         self.player = types.GameObjects.Player{};
         self.player.init(self);
 
+        self.inventory = types.GameObjects.Inventory{};
+        self.inventory.init(self, 100);
+
         // Test model from https://www.fab.com/listings/c31a5416-5ed9-48a3-8070-280884403fc8
         self.model = try raylib.loadModel("resources/barrel.glb"); // Load model
         const texture = try raylib.loadTexture("resources/T_Barrel_BaseColor.png"); // Load model texture
@@ -50,12 +54,22 @@ pub const GameManager = struct {
             return;
         }
 
-        if (raylib.isKeyReleased(raylib.KeyboardKey.f5)) {
+        if (self.inventory.open) {
+            self.inventory.update();
+            return;
+        }
+
+        if (raylib.isKeyReleased(.f5)) {
             shared.settings.gameSettings.debug = !shared.settings.gameSettings.debug;
         }
 
-        if (raylib.isKeyReleased(raylib.KeyboardKey.grave)) {
+        if (raylib.isKeyReleased(.grave)) {
             self.console.consoleToggle();
+        }
+
+        if (raylib.isKeyReleased(.i)) {
+            self.inventory.open = !self.inventory.open;
+            return;
         }
 
         self.player.update();
@@ -75,6 +89,11 @@ pub const GameManager = struct {
 
     pub fn draw(self: *GameManager) void {
         if (self.closeWindow) {
+            return;
+        }
+
+        if (self.inventory.open) {
+            self.inventory.draw();
             return;
         }
 
