@@ -25,8 +25,10 @@ The editor project is in the [editor](./editor/) folder, do a **zig build run** 
 |WASD|Walking|
 |Mouse|Look|
 | e| interact|
+| i| inventory|
 |~|Console|
 |F5|Turn on/off Debug|
+|F10| Quit/Exit |
 
 ### Console comands 
 |Control| Function|
@@ -34,8 +36,8 @@ The editor project is in the [editor](./editor/) folder, do a **zig build run** 
 |LOCATION X Y| WARP to X,Y position|
 
 
-
 ## Credits
+See [credits file](./Credits.md)
 
 ### Game Library
 [raylib](https://www.raylib.com/)

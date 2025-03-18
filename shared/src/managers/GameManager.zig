@@ -13,7 +13,6 @@ pub const GameManager = struct {
     closeWindow: bool = false,
     console: types.Console = undefined,
     player: types.GameObjects.Player = undefined,
-    model: raylib.Model = undefined,
     inventory: types.GameObjects.Inventory = undefined,
 
     pub fn initialize(self: *GameManager) !void {
@@ -25,8 +24,7 @@ pub const GameManager = struct {
 
         try shared.settings.gameSettings.init();
 
-        const basicScene = try util.string.constU8toU8("overworld.scn");
-        const loadedScene = try types.Scene.load(basicScene);
+        const loadedScene = try types.Scene.load("overworld.scn");
         if (loadedScene == null) {
             self.closeWindow = true;
             return;
@@ -41,12 +39,6 @@ pub const GameManager = struct {
 
         self.inventory = types.GameObjects.Inventory{};
         self.inventory.init(self, 100);
-
-        // Test model from https://www.fab.com/listings/c31a5416-5ed9-48a3-8070-280884403fc8
-        self.model = try raylib.loadModel("resources/barrel.glb"); // Load model
-        const texture = try raylib.loadTexture("resources/T_Barrel_BaseColor.png"); // Load model texture
-        self.model.materials[0].maps[0].texture = texture; // Set map diffuse texture
-
     }
 
     pub fn update(self: *GameManager) void {
@@ -103,8 +95,6 @@ pub const GameManager = struct {
 
             // Draw ground
             self.currentScene.draw();
-
-            //  raylib.drawModel(self.model, raylib.Vector3{ .x = 25, .y = self.currentScene.getYValueBasedOnLocation(25, 25) + 1.5, .z = 25 }, 0.5, raylib.Color.white); // Draw 3d model with texture
         }
 
         self.drawUI();
