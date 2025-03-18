@@ -9,7 +9,6 @@ pub const Inventory = struct {
     items: ArrayList(shared.types.GameObjects.Item) = undefined,
     capacity: u32 = 0,
     gameManager: *shared.managers.GameManager = undefined,
-    open: bool = false,
 
     pub fn init(self: *Inventory, gameManager: *shared.managers.GameManager, capacity: u32) void {
         self.capacity = capacity;
@@ -17,13 +16,17 @@ pub const Inventory = struct {
         self.gameManager = gameManager;
     }
 
-    pub fn update(self: *Inventory) void {
+    pub fn update(self: *Inventory) anyerror!void {
         if (raylib.isKeyReleased(.i) or raylib.isKeyReleased(.escape)) {
-            self.open = !self.open;
+            try self.gameManager.changeView(.Scene);
+        }
+
+        if (raylib.isKeyReleased(.c)) {
+            try self.gameManager.changeView(.Character);
         }
     }
 
-    pub fn draw(self: *Inventory) void {
+    pub fn draw(self: *Inventory) anyerror!void {
         _ = self.items;
         raylib.clearBackground(raylib.Color.brown);
     }

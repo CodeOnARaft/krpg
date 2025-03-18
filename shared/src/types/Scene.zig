@@ -23,6 +23,7 @@ pub const Scene = struct {
     startLocation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     currentTrigger: *types.Trigger = types.emptyTriggerPtr,
     camera: *raylib.Camera3D = undefined,
+    gameManager: *managers.GameManager = undefined,
 
     pub fn new() !Scene {
         const blankName = try util.string.constU8toU8("_blank");
@@ -174,7 +175,25 @@ pub const Scene = struct {
         return 0.0;
     }
 
-    pub fn update(self: *Scene) void {
+    pub fn update(self: *Scene) anyerror!void {
+        if (!shared.settings.gameSettings.paused) {
+            self.gameManager.camera.update(.first_person);
+            self.gameManager.camera.up = raylib.Vector3.init(0, 1, 0);
+
+            if (!util.vector3.areEqual(self.gameManager.camera.position, self.gameManager.oldCameraPosition)) {
+                self.updateCameraPosition(self.gameManager.camera);
+                self.gameManager.oldCameraPosition = self.gameManager.camera.position;
+            }
+        }
+
+        if (raylib.isKeyReleased(.i)) {
+            try self.gameManager.changeView(.Inventory);
+        }
+
+        if (raylib.isKeyReleased(.c)) {
+            try self.gameManager.changeView(.Character);
+        }
+
         if (raylib.isKeyReleased(raylib.KeyboardKey.e)) {
             if (self.currentTrigger.type != types.TriggerTypes.Empty) {
                 std.debug.print("Interacting with trigger: {s} \n", .{self.currentTrigger.description});
@@ -184,21 +203,29 @@ pub const Scene = struct {
             }
         }
     }
-    pub fn draw(self: *Scene) void {
-        for (0..self.loadedSectors.items.len) |index| {
-            self.loadedSectors.items[index].draw();
+
+    pub fn draw(self: *Scene) anyerror!void {
+        {
+            self.gameManager.camera.begin();
+            defer self.gameManager.camera.end();
+
+            for (0..self.loadedSectors.items.len) |index| {
+                self.loadedSectors.items[index].draw();
+            }
+
+            var i: usize = 0;
+            const camera: raylib.Camera3D = self.gameManager.camera.*;
+            while (i < self.loadedNPCs.items.len) : (i += 1) {
+                self.loadedNPCs.items[i].draw(camera);
+            }
+
+            if (shared.settings.gameSettings.editing) {
+                const y = self.getYValueBasedOnLocation(self.startLocation.x, self.startLocation.z) + 1;
+                raylib.drawSphere(raylib.Vector3{ .x = self.startLocation.x, .y = y, .z = self.startLocation.z }, 1, raylib.Color.red);
+            }
         }
 
-        var i: usize = 0;
-        const camera: raylib.Camera3D = self.camera.*;
-        while (i < self.loadedNPCs.items.len) : (i += 1) {
-            self.loadedNPCs.items[i].draw(camera);
-        }
-
-        if (shared.settings.gameSettings.editing) {
-            const y = self.getYValueBasedOnLocation(self.startLocation.x, self.startLocation.z) + 1;
-            raylib.drawSphere(raylib.Vector3{ .x = self.startLocation.x, .y = y, .z = self.startLocation.z }, 1, raylib.Color.red);
-        }
+        self.drawUI();
     }
 
     pub fn drawUI(self: *Scene) void {

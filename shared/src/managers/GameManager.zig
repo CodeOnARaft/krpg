@@ -5,6 +5,7 @@ const shared = @import("../root.zig");
 const types = shared.types;
 const map = shared.map;
 const util = shared.utility;
+const interfaces = types.interfaces;
 
 pub const GameManager = struct {
     camera: *raylib.Camera3D = undefined,
@@ -14,6 +15,7 @@ pub const GameManager = struct {
     console: types.Console = undefined,
     player: types.GameObjects.Player = undefined,
     inventory: types.GameObjects.Inventory = undefined,
+    activeView: interfaces.ActiveViewInterface = undefined,
 
     pub fn initialize(self: *GameManager) !void {
         self.console = types.Console{};
@@ -33,6 +35,8 @@ pub const GameManager = struct {
         self.currentScene = loadedScene.?;
         self.currentScene.camera = self.camera;
         self.currentScene.resetCameraPosition(self.camera);
+        self.currentScene.gameManager = self;
+        self.activeView = interfaces.ActiveViewInterface.init(&self.currentScene);
 
         self.player = types.GameObjects.Player{};
         self.player.init(self);
@@ -41,13 +45,22 @@ pub const GameManager = struct {
         self.inventory.init(self, 100);
     }
 
-    pub fn update(self: *GameManager) void {
-        if (self.closeWindow) {
-            return;
+    pub fn changeView(self: *GameManager, view: types.Views) anyerror!void {
+        switch (view) {
+            types.Views.Scene => {
+                self.activeView = interfaces.ActiveViewInterface.init(&self.currentScene);
+            },
+            types.Views.Inventory => {
+                self.activeView = interfaces.ActiveViewInterface.init(&self.inventory);
+            },
+            types.Views.Character => {
+                self.activeView = interfaces.ActiveViewInterface.init(&self.player);
+            },
         }
+    }
 
-        if (self.inventory.open) {
-            self.inventory.update();
+    pub fn update(self: *GameManager) anyerror!void {
+        if (self.closeWindow) {
             return;
         }
 
@@ -59,53 +72,15 @@ pub const GameManager = struct {
             self.console.consoleToggle();
         }
 
-        if (raylib.isKeyReleased(.i)) {
-            self.inventory.open = !self.inventory.open;
-            return;
-        }
-
-        self.player.update();
-
-        if (!shared.settings.gameSettings.paused) {
-            self.camera.update(.first_person);
-            self.camera.up = raylib.Vector3.init(0, 1, 0);
-
-            if (!util.vector3.areEqual(self.camera.position, self.oldCameraPosition)) {
-                self.currentScene.updateCameraPosition(self.camera);
-                self.oldCameraPosition = self.camera.position;
-            }
-        }
-
-        self.currentScene.update();
+        try self.activeView.update();
     }
 
-    pub fn draw(self: *GameManager) void {
+    pub fn draw(self: *GameManager) anyerror!void {
         if (self.closeWindow) {
             return;
         }
 
-        if (self.inventory.open) {
-            self.inventory.draw();
-            return;
-        }
-
-        {
-            self.camera.begin();
-            defer self.camera.end();
-
-            // Draw ground
-            self.currentScene.draw();
-        }
-
-        self.drawUI();
-    }
-
-    pub fn drawUI(self: *GameManager) void {
-        if (self.closeWindow) {
-            return;
-        }
-
-        self.currentScene.drawUI();
+        try self.activeView.draw();
 
         self.console.drawConsole();
     }

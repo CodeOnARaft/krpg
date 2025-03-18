@@ -14,7 +14,20 @@ pub const Player = struct {
         self.gameManager = gameManager;
     }
 
-    pub fn update(self: *Player) void {
+    pub fn update(self: *Player) anyerror!void {
         _ = self.gameManager.console;
+
+        if (raylib.isKeyReleased(.i)) {
+            try self.gameManager.changeView(.Inventory);
+        }
+
+        if (raylib.isKeyReleased(.escape) or raylib.isKeyReleased(.c)) {
+            try self.gameManager.changeView(.Scene);
+        }
+    }
+
+    pub fn draw(self: *Player) anyerror!void {
+        _ = self.gameManager.console;
+        raylib.clearBackground(raylib.Color.gray);
     }
 };

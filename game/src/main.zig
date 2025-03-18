@@ -14,13 +14,13 @@ pub fn main() anyerror!void {
     try gameManager.initialize();
 
     while (!raylib.windowShouldClose() or gameManager.closeWindow) {
-        gameManager.update();
+        try gameManager.update();
 
         raylib.beginDrawing();
         defer raylib.endDrawing();
 
         raylib.clearBackground(raylib.Color.black);
 
-        gameManager.draw();
+        try gameManager.draw();
     }
 }
