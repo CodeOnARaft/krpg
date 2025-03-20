@@ -176,7 +176,7 @@ pub const Scene = struct {
     }
 
     pub fn update(self: *Scene) anyerror!void {
-        if (!shared.settings.gameSettings.paused) {
+        if (!shared.settings.gameSettings.paused and !shared.settings.gameSettings.editing) {
             self.gameManager.camera.update(.first_person);
             self.gameManager.camera.up = raylib.Vector3.init(0, 1, 0);
 
@@ -186,28 +186,32 @@ pub const Scene = struct {
             }
         }
 
-        if (raylib.isKeyReleased(.i)) {
-            try self.gameManager.changeView(.Inventory);
-        }
+        if (!shared.settings.gameSettings.editing) {
+            if (raylib.isKeyReleased(.i)) {
+                try self.gameManager.changeView(.Inventory);
+            }
 
-        if (raylib.isKeyReleased(.c)) {
-            try self.gameManager.changeView(.Character);
-        }
+            if (raylib.isKeyReleased(.c)) {
+                try self.gameManager.changeView(.Character);
+            }
 
-        if (raylib.isKeyReleased(raylib.KeyboardKey.e)) {
-            if (self.currentTrigger.type != types.TriggerTypes.Empty) {
-                std.debug.print("Interacting with trigger: {s} \n", .{self.currentTrigger.description});
-                self.currentTrigger = types.emptyTriggerPtr;
-            } else {
-                std.debug.print("No trigger to interact with\n", .{});
+            if (raylib.isKeyReleased(raylib.KeyboardKey.e)) {
+                if (self.currentTrigger.type != types.TriggerTypes.Empty) {
+                    std.debug.print("Interacting with trigger: {s} \n", .{self.currentTrigger.description});
+                    self.currentTrigger = types.emptyTriggerPtr;
+                } else {
+                    std.debug.print("No trigger to interact with\n", .{});
+                }
             }
         }
     }
 
     pub fn draw(self: *Scene) anyerror!void {
         {
-            self.gameManager.camera.begin();
-            defer self.gameManager.camera.end();
+            if (!shared.settings.gameSettings.editing) {
+                self.gameManager.camera.begin();
+                defer self.gameManager.camera.end();
+            }
 
             for (0..self.loadedSectors.items.len) |index| {
                 self.loadedSectors.items[index].draw();

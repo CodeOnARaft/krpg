@@ -86,7 +86,7 @@ pub const EditorWindow = struct {
             self.camera.begin();
             defer self.camera.end();
             if (self.sceneLoaded) {
-                self.currentScene.draw();
+                try self.currentScene.draw();
             }
             raylib.drawGrid(100, 10);
         }
@@ -123,6 +123,9 @@ pub const EditorWindow = struct {
             if (testScene != null) {
                 dialog.editor.currentScene = testScene.?;
                 dialog.editor.sceneLoaded = true;
+                std.debug.print("Loaded scene\n", .{});
+            } else {
+                std.debug.print("Failed to load scene\n", .{});
             }
         } else {
             std.debug.print("Invalid file type\n", .{});
