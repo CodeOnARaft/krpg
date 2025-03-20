@@ -16,6 +16,8 @@ pub const GameManager = struct {
     player: types.GameObjects.Player = undefined,
     inventory: types.GameObjects.Inventory = undefined,
     activeView: interfaces.ActiveViewInterface = undefined,
+    model: raylib.Model = undefined,
+    objectManager: shared.managers.ObjectsManager = undefined,
 
     pub fn initialize(self: *GameManager) !void {
         self.console = types.Console{};
@@ -43,6 +45,9 @@ pub const GameManager = struct {
 
         self.inventory = types.GameObjects.Inventory{};
         self.inventory.init(self, 100);
+
+        self.objectManager = shared.managers.ObjectsManager{};
+        try self.objectManager.init();
     }
 
     pub fn changeView(self: *GameManager, view: types.Views) anyerror!void {

@@ -77,7 +77,7 @@ pub const Scene = struct {
                 continue;
             }
 
-            std.debug.print("Command: {s}: length: {}\n", .{ parts.items[0], parts.items.len });
+            // std.debug.print("Command: {s}: length: {}\n", .{ parts.items[0], parts.items.len });
             if (std.mem.eql(u8, parts.items[0], "start")) {
                 const startx = std.fmt.parseFloat(f32, parts.items[1]) catch |err| {
                     std.debug.print("Error parsing x: {}\n", .{err});
@@ -210,7 +210,6 @@ pub const Scene = struct {
         {
             if (!shared.settings.gameSettings.editing) {
                 self.gameManager.camera.begin();
-                defer self.gameManager.camera.end();
             }
 
             for (0..self.loadedSectors.items.len) |index| {
@@ -226,6 +225,10 @@ pub const Scene = struct {
             if (shared.settings.gameSettings.editing) {
                 const y = self.getYValueBasedOnLocation(self.startLocation.x, self.startLocation.z) + 1;
                 raylib.drawSphere(raylib.Vector3{ .x = self.startLocation.x, .y = y, .z = self.startLocation.z }, 1, raylib.Color.red);
+            }
+
+            if (!shared.settings.gameSettings.editing) {
+                self.gameManager.camera.end();
             }
         }
 

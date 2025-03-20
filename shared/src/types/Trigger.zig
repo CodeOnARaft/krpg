@@ -10,6 +10,7 @@ pub const TriggerTypes = enum {
     Empty,
     SceneChange,
     Conversation,
+    Inventory,
 };
 
 pub const emptyTrigger: types.Trigger = types.Trigger{ .type = types.TriggerTypes.Empty, .description = @constCast("empty") };

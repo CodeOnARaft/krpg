@@ -1,0 +1,4 @@
+name bread_roll .
+model bread_roll/bread_roll.glb .
+walkthrough 1 .
+trigger inventory .

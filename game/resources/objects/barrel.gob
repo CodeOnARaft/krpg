@@ -1,3 +1,4 @@
-model barrel.glb
-texture T_Barrel_BaseColor.png
-walkthrough 0
+name barrel .
+model barrel/barrel.glb .
+texture barrel/T_Barrel_BaseColor.png .
+walkthrough 0 .
