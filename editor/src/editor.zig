@@ -17,6 +17,7 @@ pub const EditorWindow = struct {
     sceneLoaded: bool = false,
     ofd: ui.dialog.OpenFileDialog = undefined,
     module: bool = false,
+    objectManager: shared.managers.ObjectsManager = undefined,
 
     w: f32 = 1280.0,
     h: f32 = 720.0,
@@ -45,6 +46,9 @@ pub const EditorWindow = struct {
 
         self.ofd = ui.dialog.OpenFileDialog{};
         try self.ofd.init(self);
+
+        self.objectManager = shared.managers.ObjectsManager{};
+        try self.objectManager.init();
     }
 
     pub fn update(self: *EditorWindow) !void {
@@ -122,6 +126,7 @@ pub const EditorWindow = struct {
             const testScene = try types.Scene.load(file);
             if (testScene != null) {
                 dialog.editor.currentScene = testScene.?;
+                dialog.editor.currentScene.objectManager = &dialog.editor.objectManager;
                 dialog.editor.sceneLoaded = true;
                 std.debug.print("Loaded scene\n", .{});
             } else {

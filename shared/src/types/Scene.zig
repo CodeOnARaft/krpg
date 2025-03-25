@@ -25,6 +25,7 @@ pub const Scene = struct {
     currentTrigger: *types.Trigger = types.emptyTriggerPtr,
     camera: *raylib.Camera3D = undefined,
     gameManager: *managers.GameManager = undefined,
+    objectManager: *managers.ObjectsManager = undefined,
 
     pub fn new() !Scene {
         const blankName = try util.string.constU8toU8("_blank");
@@ -225,7 +226,7 @@ pub const Scene = struct {
             // }
 
             for (0..self.loadedObjects.items.len) |index| {
-                try self.gameManager.objectManager.drawObject(self.loadedObjects.items[index].name, self.loadedObjects.items[index].position);
+                try self.objectManager.drawObject(self.loadedObjects.items[index].name, self.loadedObjects.items[index].position);
             }
 
             if (shared.settings.gameSettings.editing) {

@@ -174,18 +174,6 @@ pub const OpenFileDialog = struct {
                 std.mem.copyForwards(u8, buffer[0..entry.name.len], entry.name);
 
                 if (raylib.checkCollisionPointRec(mousePos, rec2) and self.testDoubleClick(fileLocation)) {
-                    // const buffer2 = try allocator.allocSentinel(u8, entry.name.len + self.currentDirectoryName.len + 1, 0);
-                    // std.mem.copyForwards(u8, buffer2[0..self.currentDirectoryName.len], self.currentDirectoryName);
-                    // buffer2[self.currentDirectoryName.len] = '/';
-                    // std.mem.copyForwards(u8, buffer2[self.currentDirectoryName.len + 1 ..], entry.name);
-
-                    //var parts: ArrayList([]const u8) = ArrayList([]const u8).init(std.heap.page_allocator);
-                    //var it = std.mem.splitScalar(u8, entry.name, '.');
-
-                    // while (it.next()) |commandPart| {
-                    //     try parts.append(commandPart);
-                    // }
-
                     try (self.callBackFunction)(self, entry.name);
                     self.open = false;
                     //allocator.free(buffer2);
