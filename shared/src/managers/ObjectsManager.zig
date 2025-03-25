@@ -91,4 +91,17 @@ pub const ObjectsManager = struct {
 
         std.debug.print("Loaded objects: {d}\n", .{self.objects.items.len});
     }
+
+    pub fn drawObject(self: *ObjectsManager, name: []const u8, location: raylib.Vector3) !void {
+        for (self.objects.items) |object| {
+            //std.debug.print("Checking object: {s} = {s}\n", .{ object.name, name });
+            if (std.mem.eql(u8, object.name, name)) {
+                //std.debug.print("Drawing object: {s}\n", .{object.name});
+                raylib.drawModel(object.model, location, 1.0, raylib.Color.white);
+                if (shared.settings.gameSettings.debug or shared.settings.gameSettings.editing) {
+                    raylib.drawModelWires(object.model, location, 1.05, raylib.Color.red);
+                }
+            }
+        }
+    }
 };

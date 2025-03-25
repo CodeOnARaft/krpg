@@ -20,6 +20,7 @@ pub const Scene = struct {
     sceneType: SceneTypes = SceneTypes.Blank,
     loadedSectors: ArrayList(types.GroundSector) = undefined,
     loadedNPCs: ArrayList(types.GameObjects.NPC) = undefined,
+    loadedObjects: ArrayList(types.GameObjects.ObjectInstance) = undefined,
     startLocation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     currentTrigger: *types.Trigger = types.emptyTriggerPtr,
     camera: *raylib.Camera3D = undefined,
@@ -27,7 +28,7 @@ pub const Scene = struct {
 
     pub fn new() !Scene {
         const blankName = try util.string.constU8toU8("_blank");
-        return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(std.heap.page_allocator), .loadedNPCs = ArrayList(types.GameObjects.NPC).init(std.heap.page_allocator) };
+        return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(std.heap.page_allocator), .loadedObjects = ArrayList(types.GameObjects.ObjectInstance).init(std.heap.page_allocator), .loadedNPCs = ArrayList(types.GameObjects.NPC).init(std.heap.page_allocator) };
     }
 
     pub fn load(scene_name: []const u8) !?Scene {
@@ -120,6 +121,7 @@ pub const Scene = struct {
                 try scene.loadedSectors.append(sector.?);
 
                 try types.GameObjects.NPC.load(sc_fn, x, z, &scene);
+                try types.GameObjects.ObjectInstance.load(sc_fn, x, z, &scene);
             }
         }
 
@@ -216,10 +218,14 @@ pub const Scene = struct {
                 self.loadedSectors.items[index].draw();
             }
 
-            var i: usize = 0;
-            const camera: raylib.Camera3D = self.gameManager.camera.*;
-            while (i < self.loadedNPCs.items.len) : (i += 1) {
-                self.loadedNPCs.items[i].draw(camera);
+            //var i: usize = 0;
+            // const camera: raylib.Camera3D = self.gameManager.camera.*;
+            // while (i < self.loadedNPCs.items.len) : (i += 1) {
+            //     self.loadedNPCs.items[i].draw(camera);
+            // }
+
+            for (0..self.loadedObjects.items.len) |index| {
+                try self.gameManager.objectManager.drawObject(self.loadedObjects.items[index].name, self.loadedObjects.items[index].position);
             }
 
             if (shared.settings.gameSettings.editing) {
