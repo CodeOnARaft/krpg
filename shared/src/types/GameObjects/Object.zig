@@ -2,6 +2,7 @@ const std = @import("std");
 const ArrayList = std.ArrayList;
 const raylib = @import("raylib");
 const shared = @import("../../root.zig");
+const raygui = @import("raygui");
 
 pub const Object = struct {
     name: []const u8 = undefined,
@@ -89,6 +90,14 @@ pub const ObjectInstance = struct {
         if (obj.name.len > 0) {
             try scene.loadedObjects.append(obj);
         }
+    }
+
+    pub fn drawProperties(self: *ObjectInstance) anyerror!void {
+        const allocator = std.heap.page_allocator;
+        const buffer = try allocator.allocSentinel(u8, self.name.len, 0);
+        std.mem.copyForwards(u8, buffer[0..self.name.len], self.name);
+        _ = raygui.guiLabel(raylib.Rectangle{ .x = 10, .y = 10, .width = 100, .height = 20 }, buffer);
+        allocator.free(buffer);
     }
 };
 

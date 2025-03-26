@@ -18,6 +18,8 @@ pub const EditorWindow = struct {
     ofd: ui.dialog.OpenFileDialog = undefined,
     module: bool = false,
     objectManager: shared.managers.ObjectsManager = undefined,
+    selectedObject: types.interfaces.EditorSelectedInterface = undefined,
+    objectSelected: bool = false,
 
     w: f32 = 1280.0,
     h: f32 = 720.0,
@@ -29,10 +31,10 @@ pub const EditorWindow = struct {
         shared.settings.gameSettings.editing = true;
 
         self.sceneWindow = ui.SceneWindow{};
-        self.sceneWindow.init();
+        self.sceneWindow.init(self);
 
         self.propertyWindow = ui.PropertiesWindow{};
-        self.propertyWindow.init();
+        self.propertyWindow.init(self);
 
         self.camera = raylib.Camera3D{
             .position = raylib.Vector3.init(20, 25, 20),
@@ -99,8 +101,8 @@ pub const EditorWindow = struct {
             _ = raygui.guiLock();
         }
         self.menu.draw();
-        self.sceneWindow.draw();
-        self.propertyWindow.draw();
+        try self.sceneWindow.draw();
+        try self.propertyWindow.draw();
 
         if (self.state == EditorState.Interacting) {
             _ = raygui.guiStatusBar(raylib.Rectangle{ .x = 0.0, .y = self.h - 25.0, .height = 25.0, .width = self.w }, "Press ESC to edit.");
