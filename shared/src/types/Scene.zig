@@ -32,8 +32,9 @@ pub const Scene = struct {
         return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(std.heap.page_allocator), .loadedObjects = ArrayList(types.GameObjects.ObjectInstance).init(std.heap.page_allocator), .loadedNPCs = ArrayList(types.GameObjects.NPC).init(std.heap.page_allocator) };
     }
 
-    pub fn load(scene_name: []const u8) !?Scene {
+    pub fn load(scene_name: []const u8, objectManager: *shared.managers.ObjectsManager) !?Scene {
         var scene = try new();
+        scene.objectManager = objectManager;
         scene.currentTrigger = types.emptyTriggerPtr;
 
         const cwd = std.fs.cwd();
@@ -218,12 +219,6 @@ pub const Scene = struct {
             for (0..self.loadedSectors.items.len) |index| {
                 self.loadedSectors.items[index].draw();
             }
-
-            //var i: usize = 0;
-            // const camera: raylib.Camera3D = self.gameManager.camera.*;
-            // while (i < self.loadedNPCs.items.len) : (i += 1) {
-            //     self.loadedNPCs.items[i].draw(camera);
-            // }
 
             for (0..self.loadedObjects.items.len) |index| {
                 try self.objectManager.drawObject(self.loadedObjects.items[index].name, self.loadedObjects.items[index].position);

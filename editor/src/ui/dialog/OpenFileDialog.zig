@@ -170,15 +170,12 @@ pub const OpenFileDialog = struct {
             if (entry.kind == .file) {
                 const fileLocation = raylib.Rectangle{ .x = fileX, .y = self.location.y + 55 + yy, .width = width, .height = 20 };
 
+                if (raylib.checkCollisionPointRec(mousePos, rec2) and self.testDoubleClick(fileLocation)) {
+                    self.open = false;
+                    try (self.callBackFunction)(self, entry.name);
+                }
                 const buffer = try allocator.allocSentinel(u8, entry.name.len, 0);
                 std.mem.copyForwards(u8, buffer[0..entry.name.len], entry.name);
-
-                if (raylib.checkCollisionPointRec(mousePos, rec2) and self.testDoubleClick(fileLocation)) {
-                    try (self.callBackFunction)(self, entry.name);
-                    self.open = false;
-                    //allocator.free(buffer2);
-                }
-
                 if (raygui.guiLabel(fileLocation, buffer) > 0) {}
                 allocator.free(buffer);
                 yy = yy + 20;

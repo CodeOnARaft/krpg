@@ -17,6 +17,7 @@ pub const ObjectInstance = struct {
     rotation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
 
     name: []const u8 = undefined,
+    objectManager: *shared.managers.ObjectsManager = undefined,
 
     pub fn load(scene_name: []const u8, x: i32, z: i32, scene: *shared.types.Scene) !void {
         const cwd = std.fs.cwd();
@@ -54,6 +55,7 @@ pub const ObjectInstance = struct {
 
             if (std.mem.eql(u8, parts.items[0], "name")) {
                 if (obj.name.len > 0) {
+                    std.debug.print("obj name: {s}\n", .{obj.name});
                     try scene.loadedObjects.append(obj);
                 }
 
@@ -65,6 +67,7 @@ pub const ObjectInstance = struct {
                 std.mem.copyForwards(u8, nameBuffer, parts.items[1]);
                 obj = shared.types.GameObjects.ObjectInstance{
                     .name = nameBuffer,
+                    .objectManager = scene.objectManager,
                 };
             } else if (std.mem.eql(u8, parts.items[0], "position")) {
                 const obj_x = std.fmt.parseFloat(f32, parts.items[1]) catch |err| {
@@ -90,14 +93,24 @@ pub const ObjectInstance = struct {
         if (obj.name.len > 0) {
             try scene.loadedObjects.append(obj);
         }
+
+        std.debug.print("Loaded objects: {d}\n", .{scene.loadedObjects.items.len});
     }
 
-    pub fn drawProperties(self: *ObjectInstance) anyerror!void {
+    pub fn drawProperties(self: *ObjectInstance, position: raylib.Rectangle) anyerror!void {
+        std.debug.print("drawProperties\n", .{});
         const allocator = std.heap.page_allocator;
         const buffer = try allocator.allocSentinel(u8, self.name.len, 0);
         std.mem.copyForwards(u8, buffer[0..self.name.len], self.name);
-        _ = raygui.guiLabel(raylib.Rectangle{ .x = 10, .y = 10, .width = 100, .height = 20 }, buffer);
+        _ = raygui.guiLabel(raylib.Rectangle{ .x = position.x, .y = position.y, .width = 100, .height = 20 }, buffer);
         allocator.free(buffer);
+    }
+
+    pub fn drawSelected(self: *ObjectInstance) anyerror!void {
+        self.objectManager.drawSelected(self.name, self.position) catch |err| {
+            std.debug.print("Error drawing selected object: {}\n", .{err});
+            return err;
+        };
     }
 };
 

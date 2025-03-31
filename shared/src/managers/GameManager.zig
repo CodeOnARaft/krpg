@@ -28,7 +28,10 @@ pub const GameManager = struct {
 
         try shared.settings.gameSettings.init();
 
-        const loadedScene = try types.Scene.load("overworld.scn");
+        self.objectManager = shared.managers.ObjectsManager{};
+        try self.objectManager.init();
+
+        const loadedScene = try types.Scene.load("overworld.scn", &self.objectManager);
         if (loadedScene == null) {
             self.closeWindow = true;
             return;
@@ -45,9 +48,6 @@ pub const GameManager = struct {
 
         self.inventory = types.GameObjects.Inventory{};
         self.inventory.init(self, 100);
-
-        self.objectManager = shared.managers.ObjectsManager{};
-        try self.objectManager.init();
     }
 
     pub fn changeView(self: *GameManager, view: types.Views) anyerror!void {

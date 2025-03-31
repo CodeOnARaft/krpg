@@ -93,6 +93,9 @@ pub const EditorWindow = struct {
             defer self.camera.end();
             if (self.sceneLoaded) {
                 try self.currentScene.draw();
+                if (self.objectSelected) {
+                    try self.selectedObject.drawSelected();
+                }
             }
             raylib.drawGrid(100, 10);
         }
@@ -125,11 +128,11 @@ pub const EditorWindow = struct {
         dialog.editor.module = false;
 
         if (std.mem.endsWith(u8, file, ".scn")) {
-            const testScene = try types.Scene.load(file);
+            const testScene = try types.Scene.load(file, &dialog.editor.objectManager);
             if (testScene != null) {
                 dialog.editor.currentScene = testScene.?;
-                dialog.editor.currentScene.objectManager = &dialog.editor.objectManager;
                 dialog.editor.sceneLoaded = true;
+
                 std.debug.print("Loaded scene\n", .{});
             } else {
                 std.debug.print("Failed to load scene\n", .{});
@@ -137,6 +140,8 @@ pub const EditorWindow = struct {
         } else {
             std.debug.print("Invalid file type\n", .{});
         }
+
+        std.debug.print("File: {s}\n", .{file});
     }
 };
 

@@ -24,8 +24,9 @@ pub const PropertiesWindow = struct {
         var rec2 = raylib.Rectangle{ .x = self.windowLocation.x + 5.0, .y = self.windowLocation.y + 5.0, .height = self.windowLocation.height - 10.0, .width = self.windowLocation.width - 10.0 };
         if (raygui.guiScrollPanel(self.windowLocation, "Properties", rec2, &vec2, &rec2) > 0) {}
 
+        const position = raylib.Rectangle{ .x = vec2.x + rec2.x, .y = vec2.y + rec2.y, .width = rec2.width, .height = rec2.height };
         if (self.editor.objectSelected) {
-            try self.editor.selectedObject.drawProperties();
+            try self.editor.selectedObject.drawProperties(position);
         }
     }
 };
