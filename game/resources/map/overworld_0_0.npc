@@ -1,4 +1,4 @@
-npc mary .
-type 0 .
-texture npc.png .
+npc mary
+type 0
+texture npc.png
 location 25 15

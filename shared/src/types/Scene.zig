@@ -229,6 +229,10 @@ pub const Scene = struct {
                 raylib.drawSphere(raylib.Vector3{ .x = self.startLocation.x, .y = y, .z = self.startLocation.z }, 1, raylib.Color.red);
             }
 
+            for (0..self.loadedNPCs.items.len) |index| {
+                self.loadedNPCs.items[index].draw(self.camera.*);
+            }
+
             if (!shared.settings.gameSettings.editing) {
                 self.gameManager.camera.end();
             }

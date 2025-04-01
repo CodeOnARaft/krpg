@@ -56,9 +56,13 @@ pub const NPC = struct {
         //var index: usize = 0;
         var npc = types.GameObjects.NPC{};
         while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
+            var lline = line;
+            if (std.mem.endsWith(u8, line, "\r")) {
+                lline = line[0 .. line.len - 1];
+            }
             std.debug.print("NPC Line: {s}\n", .{line});
             var parts: ArrayList([]u8) = ArrayList([]u8).init(std.heap.page_allocator);
-            var it = std.mem.splitScalar(u8, line, ' ');
+            var it = std.mem.splitScalar(u8, lline, ' ');
 
             while (it.next()) |commandPart| {
                 const partU8 = try util.string.constU8toU8(commandPart);
