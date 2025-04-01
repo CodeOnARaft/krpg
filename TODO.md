@@ -1,13 +1,11 @@
 ## Running todo list / ideas
 
 * UI for trigger display when close
-* Show scene start in debug (Purple circle?)
 * Dialog Scene Type
 * Console command gostart to be placed in starting location
 * Console command setstart to update start location
 * Console command scenereset to reset the scene
 * Save Scene to save scene information
-* 3d model loading / displaying
 * NPC Template Type to duplication 
 * Scene Way Point System
 
