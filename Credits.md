@@ -3,6 +3,9 @@
 ## Overview
 Here is a list of media from the web that this project uses. 
 
+## AI 
+This project uses AI Generated Art
+
 ## Open Source media used
 
 Barrel Model
