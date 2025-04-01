@@ -221,7 +221,7 @@ pub const Scene = struct {
             }
 
             for (0..self.loadedObjects.items.len) |index| {
-                try self.objectManager.drawObject(self.loadedObjects.items[index].name, self.loadedObjects.items[index].position);
+                try self.objectManager.drawObject(self.loadedObjects.items[index].type, self.loadedObjects.items[index].position);
             }
 
             if (shared.settings.gameSettings.editing) {

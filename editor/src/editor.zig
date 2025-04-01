@@ -9,6 +9,7 @@ const util = shared.utility;
 pub const EditorWindow = struct {
     state: EditorState = .Editing,
     camera: raylib.Camera3D = undefined,
+    cameraSlideSpeed: f32 = 15.0,
     // openFile: bool = false,
     menu: ui.Menu = undefined,
     sceneWindow: ui.SceneWindow = undefined,
@@ -20,6 +21,8 @@ pub const EditorWindow = struct {
     objectManager: shared.managers.ObjectsManager = undefined,
     selectedObject: types.interfaces.EditorSelectedInterface = undefined,
     objectSelected: bool = false,
+
+    mouseDragLook: bool = false,
 
     w: f32 = 1280.0,
     h: f32 = 720.0,
@@ -63,13 +66,66 @@ pub const EditorWindow = struct {
         handled = self.sceneWindow.update() or handled;
         handled = self.propertyWindow.update() or handled;
 
+        if (self.mouseDragLook and raylib.isMouseButtonReleased(.right)) {
+            self.mouseDragLook = false;
+        } else if (self.mouseDragLook) {
+            self.camera.update(.free);
+        }
+
+        if (!handled and mouseInEditorWindow()) {
+            if (raylib.isMouseButtonPressed(.right)) {
+                self.mouseDragLook = true;
+            } else if (raylib.isKeyDown(.up)) {
+                const direction = raylib.Vector3{
+                    .x = self.camera.position.x - self.camera.target.x,
+                    .y = self.camera.position.y - self.camera.target.y,
+                    .z = self.camera.position.z - self.camera.target.z,
+                };
+                const normal = shared.utility.vector3.scale(shared.utility.vector3.normalize(direction), -raylib.getFrameTime() * self.cameraSlideSpeed);
+                self.camera.position = shared.utility.vector3.add(self.camera.position, normal);
+                self.camera.target = shared.utility.vector3.add(self.camera.target, normal);
+            } else if (raylib.isKeyDown(.down)) {
+                const direction = raylib.Vector3{
+                    .x = self.camera.position.x - self.camera.target.x,
+                    .y = self.camera.position.y - self.camera.target.y,
+                    .z = self.camera.position.z - self.camera.target.z,
+                };
+                const normal = shared.utility.vector3.scale(shared.utility.vector3.normalize(direction), raylib.getFrameTime() * self.cameraSlideSpeed);
+                self.camera.position = shared.utility.vector3.add(self.camera.position, normal);
+                self.camera.target = shared.utility.vector3.add(self.camera.target, normal);
+            } else if (raylib.isKeyDown(.left)) {
+                const forward = shared.utility.vector3.normalize(raylib.Vector3{
+                    .x = self.camera.target.x - self.camera.position.x,
+                    .y = self.camera.target.y - self.camera.position.y,
+                    .z = self.camera.target.z - self.camera.position.z,
+                });
+                const right = shared.utility.vector3.normalize(shared.utility.vector3.cross(forward, self.camera.up));
+                const movement = shared.utility.vector3.scale(right, -raylib.getFrameTime() * self.cameraSlideSpeed);
+                self.camera.position = shared.utility.vector3.add(self.camera.position, movement);
+                self.camera.target = shared.utility.vector3.add(self.camera.target, movement);
+            } else if (raylib.isKeyDown(.right)) {
+                const forward = shared.utility.vector3.normalize(raylib.Vector3{
+                    .x = self.camera.target.x - self.camera.position.x,
+                    .y = self.camera.target.y - self.camera.position.y,
+                    .z = self.camera.target.z - self.camera.position.z,
+                });
+                const right = shared.utility.vector3.normalize(shared.utility.vector3.cross(forward, self.camera.up));
+                const movement = shared.utility.vector3.scale(right, raylib.getFrameTime() * self.cameraSlideSpeed);
+                self.camera.position = shared.utility.vector3.add(self.camera.position, movement);
+                self.camera.target = shared.utility.vector3.add(self.camera.target, movement);
+            }
+        }
+
         if (self.state == EditorState.Editing) {
             if (!handled and mouseInEditorWindow() and raylib.isMouseButtonReleased(.left)) {
                 self.state = EditorState.Interacting;
                 raylib.hideCursor();
             }
+
+            if (raylib.isKeyReleased(.escape)) {
+                self.objectSelected = false;
+            }
         } else if (self.state == EditorState.Interacting) {
-            self.camera.update(.free);
             if (raylib.isKeyPressed(.escape)) {
                 self.state = EditorState.Editing;
                 raylib.showCursor();

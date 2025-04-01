@@ -75,13 +75,6 @@ pub const ObjectsManager = struct {
                         if (std.mem.startsWith(u8, parts.items[1], "1")) {
                             new_object.walkthrough = true;
                         }
-                    } else if (std.mem.eql(u8, parts.items[0], "trigger")) {
-                        new_object.hasTrigger = true;
-                        new_object.trigger = shared.types.Trigger{};
-
-                        if (std.mem.startsWith(u8, parts.items[1], "inventory")) {
-                            new_object.trigger.type = .Inventory;
-                        }
                     }
                 }
 
@@ -103,11 +96,8 @@ pub const ObjectsManager = struct {
     }
 
     pub fn drawSelected(self: *ObjectsManager, name: []const u8, position: raylib.Vector3) !void {
-        std.debug.print("drawSelected: {s}\n", .{name});
         for (self.objects.items) |object| {
-            std.debug.print("Checking object: {s} = {s}\n", .{ object.name, name });
             if (std.mem.eql(u8, object.name, name)) {
-                std.debug.print("Drawing object: {s}\n", .{object.name});
                 raylib.drawModelWires(object.model, position, 1.05, raylib.Color.red);
             }
         }

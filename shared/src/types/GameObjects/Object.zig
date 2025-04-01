@@ -8,15 +8,16 @@ pub const Object = struct {
     name: []const u8 = undefined,
     model: raylib.Model = undefined,
     walkthrough: bool = false,
-    trigger: shared.types.Trigger = undefined,
-    hasTrigger: bool = false,
 };
 
 pub const ObjectInstance = struct {
     position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     rotation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
+    trigger: shared.types.Trigger = undefined,
+    hasTrigger: bool = false,
 
     name: []const u8 = undefined,
+    type: []const u8 = undefined,
     objectManager: *shared.managers.ObjectsManager = undefined,
 
     pub fn load(scene_name: []const u8, x: i32, z: i32, scene: *shared.types.Scene) !void {
@@ -39,7 +40,6 @@ pub const ObjectInstance = struct {
         //var index: usize = 0;
         var obj = shared.types.GameObjects.ObjectInstance{};
         while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
-            std.debug.print("obj Line: {s}\n", .{line});
             var parts: ArrayList([]const u8) = ArrayList([]const u8).init(std.heap.page_allocator);
             var it = std.mem.splitScalar(u8, line, ' ');
 
@@ -69,6 +69,14 @@ pub const ObjectInstance = struct {
                     .name = nameBuffer,
                     .objectManager = scene.objectManager,
                 };
+            } else if (std.mem.eql(u8, parts.items[0], "type")) {
+                std.debug.print("obj: {s}\n", .{parts.items[1]});
+                const typeBuffer = allocator.alloc(u8, parts.items[1].len) catch |err| {
+                    std.debug.print("Error allocating name buffer: {}\n", .{err});
+                    return err;
+                };
+                std.mem.copyForwards(u8, typeBuffer, parts.items[1]);
+                obj.type = typeBuffer;
             } else if (std.mem.eql(u8, parts.items[0], "position")) {
                 const obj_x = std.fmt.parseFloat(f32, parts.items[1]) catch |err| {
                     std.debug.print("Error parsing x: {}\n", .{err});
@@ -98,22 +106,21 @@ pub const ObjectInstance = struct {
     }
 
     pub fn drawProperties(self: *ObjectInstance, position: raylib.Rectangle) anyerror!void {
-        std.debug.print("drawProperties\n", .{});
         const allocator = std.heap.page_allocator;
         const buffer = try allocator.allocSentinel(u8, self.name.len, 0);
         std.mem.copyForwards(u8, buffer[0..self.name.len], self.name);
-        _ = raygui.guiLabel(raylib.Rectangle{ .x = position.x, .y = position.y, .width = 100, .height = 20 }, buffer);
+        _ = raygui.guiLabel(raylib.Rectangle{ .x = position.x + 5, .y = position.y, .width = 100, .height = 20 }, buffer);
         allocator.free(buffer);
+
+        _ = raygui.guiLabel(raylib.Rectangle{ .x = position.x + 5, .y = position.y + 50, .width = 100, .height = 20 }, "X:");
+        _ = raygui.guiLabel(raylib.Rectangle{ .x = position.x + 5, .y = position.y + 75, .width = 100, .height = 20 }, "Y:");
+        _ = raygui.guiLabel(raylib.Rectangle{ .x = position.x + 5, .y = position.y + 100, .width = 100, .height = 20 }, "Z:");
     }
 
     pub fn drawSelected(self: *ObjectInstance) anyerror!void {
-        self.objectManager.drawSelected(self.name, self.position) catch |err| {
+        self.objectManager.drawSelected(self.type, self.position) catch |err| {
             std.debug.print("Error drawing selected object: {}\n", .{err});
             return err;
         };
     }
 };
-
-// self.model = try raylib.loadModel("resources/barrel.glb"); // Load model
-// const texture = try raylib.loadTexture("resources/T_Barrel_BaseColor.png"); // Load model texture
-// self.model.materials[0].maps[0].texture = texture; // Set map diffuse texture
