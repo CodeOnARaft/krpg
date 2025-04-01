@@ -9,6 +9,11 @@ pub const OFD_HEIGHT: i32 = 400;
 pub const OFD_WIDTHf: f32 = 750.0;
 pub const OFD_HEIGHTf: f32 = 400.0;
 
+pub const MB_WIDTH: i32 = 750;
+pub const MB_HEIGHT: i32 = 250;
+pub const MB_WIDTHf: f32 = 750.0;
+pub const MB_HEIGHTf: f32 = 250.0;
+
 pub const WINDOW_WIDTH: i32 = 1280;
 pub const WINDOW_HEIGHT: i32 = 720;
 pub const WINDOW_WIDTHf: f32 = 1280.0;

@@ -17,6 +17,7 @@ pub const EditorWindow = struct {
     currentScene: types.Scene = undefined,
     sceneLoaded: bool = false,
     ofd: ui.dialog.OpenFileDialog = undefined,
+    mb: ui.dialog.MessageBox = undefined,
     module: bool = false,
     objectManager: shared.managers.ObjectsManager = undefined,
     selectedObject: types.interfaces.EditorSelectedInterface = undefined,
@@ -53,8 +54,32 @@ pub const EditorWindow = struct {
         self.ofd = ui.dialog.OpenFileDialog{};
         try self.ofd.init(self);
 
+        self.mb = ui.dialog.MessageBox{};
+        try self.mb.init(self);
+
         self.objectManager = shared.managers.ObjectsManager{};
         try self.objectManager.init();
+
+        try self.mb.openDialog(
+            "Message Box",
+            "Test Message",
+            ui.dialog.MessageBoxType.Info,
+            &mbCallback,
+        );
+        self.module = true;
+    }
+
+    pub fn mbCallback(dd: *ui.dialog.MessageBox, result: i32) anyerror!void {
+        dd.editor.module = false;
+        if (result == 0) {
+            std.debug.print("OK pressed\n", .{});
+        } else if (result == 1) {
+            std.debug.print("Cancel pressed\n", .{});
+        } else if (result == 2) {
+            std.debug.print("Yes pressed\n", .{});
+        } else if (result == 3) {
+            std.debug.print("No pressed\n", .{});
+        }
     }
 
     pub fn update(self: *EditorWindow) !void {
@@ -168,15 +193,15 @@ pub const EditorWindow = struct {
         try self.sceneWindow.draw();
         try self.propertyWindow.draw();
 
-        // if (self.state == EditorState.Interacting) {
-        //     _ = raygui.guiStatusBar(raylib.Rectangle{ .x = 0.0, .y = self.h - 25.0, .height = 25.0, .width = self.w }, "Press ESC to edit.");
-        // }
-
         if (self.module) {
             _ = raygui.guiUnlock();
         }
         if (self.module and self.ofd.open) {
             try self.ofd.draw();
+        }
+
+        if (self.module and self.mb.open) {
+            try self.mb.draw();
         }
     }
 
