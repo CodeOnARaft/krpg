@@ -62,7 +62,7 @@ pub const EditorWindow = struct {
             return;
         }
 
-        handled = self.menu.update();
+        handled = try self.menu.update();
         handled = self.sceneWindow.update() or handled;
         handled = self.propertyWindow.update() or handled;
 
