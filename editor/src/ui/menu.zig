@@ -25,6 +25,8 @@ pub const Menu = struct {
         self.icons.append(saveIcon) catch unreachable;
         self.icons.append(handIcon) catch unreachable;
         self.icons.append(moveIcon) catch unreachable;
+
+        self.selectIcon(handIcon.iconId);
     }
 
     pub fn update(self: *Menu) !bool {
@@ -48,11 +50,11 @@ pub const Menu = struct {
                     },
                     @intFromEnum(raygui.GuiIconName.icon_cursor_hand) => {
                         self.selectIcon(self.icons.items[i].iconId);
-                        // TODO Set mode
+                        self.editor.setState(.Grab);
                     },
                     @intFromEnum(raygui.GuiIconName.icon_cursor_move_fill) => {
                         self.selectIcon(self.icons.items[i].iconId);
-                        // TODO Set Mode
+                        self.editor.setState(.Move);
                     },
                     else => {},
                 }

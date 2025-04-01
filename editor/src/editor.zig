@@ -7,7 +7,7 @@ const types = shared.types;
 const util = shared.utility;
 
 pub const EditorWindow = struct {
-    state: EditorState = .Editing,
+    state: EditorState = .Grab,
     camera: raylib.Camera3D = undefined,
     cameraSlideSpeed: f32 = 15.0,
     // openFile: bool = false,
@@ -17,12 +17,14 @@ pub const EditorWindow = struct {
     currentScene: types.Scene = undefined,
     sceneLoaded: bool = false,
     ofd: ui.dialog.OpenFileDialog = undefined,
+    mb: ui.dialog.MessageBox = undefined,
     module: bool = false,
     objectManager: shared.managers.ObjectsManager = undefined,
     selectedObject: types.interfaces.EditorSelectedInterface = undefined,
     objectSelected: bool = false,
 
     mouseDragLook: bool = false,
+    mouseDragStart: raylib.Vector2 = undefined,
 
     w: f32 = 1280.0,
     h: f32 = 720.0,
@@ -52,12 +54,29 @@ pub const EditorWindow = struct {
         self.ofd = ui.dialog.OpenFileDialog{};
         try self.ofd.init(self);
 
+        self.mb = ui.dialog.MessageBox{};
+        try self.mb.init(self);
+
         self.objectManager = shared.managers.ObjectsManager{};
         try self.objectManager.init();
     }
 
+    pub fn mbCallback(dd: *ui.dialog.MessageBox, result: i32) anyerror!void {
+        dd.editor.module = false;
+        if (result == 0) {
+            std.debug.print("OK pressed\n", .{});
+        } else if (result == 1) {
+            std.debug.print("Cancel pressed\n", .{});
+        } else if (result == 2) {
+            std.debug.print("Yes pressed\n", .{});
+        } else if (result == 3) {
+            std.debug.print("No pressed\n", .{});
+        }
+    }
+
     pub fn update(self: *EditorWindow) !void {
         var handled = try self.ofd.update();
+        handled = try self.mb.update() or handled;
         if (handled) {
             return;
         }
@@ -75,62 +94,66 @@ pub const EditorWindow = struct {
         if (!handled and mouseInEditorWindow()) {
             if (raylib.isMouseButtonPressed(.right)) {
                 self.mouseDragLook = true;
-            } else if (raylib.isKeyDown(.up)) {
-                const direction = raylib.Vector3{
-                    .x = self.camera.position.x - self.camera.target.x,
-                    .y = self.camera.position.y - self.camera.target.y,
-                    .z = self.camera.position.z - self.camera.target.z,
-                };
-                const normal = shared.utility.vector3.scale(shared.utility.vector3.normalize(direction), -raylib.getFrameTime() * self.cameraSlideSpeed);
-                self.camera.position = shared.utility.vector3.add(self.camera.position, normal);
-                self.camera.target = shared.utility.vector3.add(self.camera.target, normal);
-            } else if (raylib.isKeyDown(.down)) {
-                const direction = raylib.Vector3{
-                    .x = self.camera.position.x - self.camera.target.x,
-                    .y = self.camera.position.y - self.camera.target.y,
-                    .z = self.camera.position.z - self.camera.target.z,
-                };
-                const normal = shared.utility.vector3.scale(shared.utility.vector3.normalize(direction), raylib.getFrameTime() * self.cameraSlideSpeed);
-                self.camera.position = shared.utility.vector3.add(self.camera.position, normal);
-                self.camera.target = shared.utility.vector3.add(self.camera.target, normal);
-            } else if (raylib.isKeyDown(.left)) {
-                const forward = shared.utility.vector3.normalize(raylib.Vector3{
-                    .x = self.camera.target.x - self.camera.position.x,
-                    .y = self.camera.target.y - self.camera.position.y,
-                    .z = self.camera.target.z - self.camera.position.z,
-                });
-                const right = shared.utility.vector3.normalize(shared.utility.vector3.cross(forward, self.camera.up));
-                const movement = shared.utility.vector3.scale(right, -raylib.getFrameTime() * self.cameraSlideSpeed);
-                self.camera.position = shared.utility.vector3.add(self.camera.position, movement);
-                self.camera.target = shared.utility.vector3.add(self.camera.target, movement);
-            } else if (raylib.isKeyDown(.right)) {
-                const forward = shared.utility.vector3.normalize(raylib.Vector3{
-                    .x = self.camera.target.x - self.camera.position.x,
-                    .y = self.camera.target.y - self.camera.position.y,
-                    .z = self.camera.target.z - self.camera.position.z,
-                });
-                const right = shared.utility.vector3.normalize(shared.utility.vector3.cross(forward, self.camera.up));
-                const movement = shared.utility.vector3.scale(right, raylib.getFrameTime() * self.cameraSlideSpeed);
-                self.camera.position = shared.utility.vector3.add(self.camera.position, movement);
-                self.camera.target = shared.utility.vector3.add(self.camera.target, movement);
+            } else {
+                switch (self.state) {
+                    EditorState.Grab => {
+                        if (raylib.isMouseButtonPressed(.left)) {
+                            self.mouseDragStart = raylib.getMousePosition();
+                        } else if (raylib.isMouseButtonDown(.left)) {
+                            const mouse = raylib.getMousePosition();
+                            // const delta = shared.utility.vector2.subtract(mouse, self.mouseDragStart);
+
+                            self.mouseDragStart = mouse;
+                        }
+                    },
+                    EditorState.Move => {
+                        if (raylib.isKeyDown(.up)) {
+                            const direction = raylib.Vector3{
+                                .x = self.camera.position.x - self.camera.target.x,
+                                .y = self.camera.position.y - self.camera.target.y,
+                                .z = self.camera.position.z - self.camera.target.z,
+                            };
+                            const normal = shared.utility.vector3.scale(shared.utility.vector3.normalize(direction), -raylib.getFrameTime() * self.cameraSlideSpeed);
+                            self.camera.position = shared.utility.vector3.add(self.camera.position, normal);
+                            self.camera.target = shared.utility.vector3.add(self.camera.target, normal);
+                        } else if (raylib.isKeyDown(.down)) {
+                            const direction = raylib.Vector3{
+                                .x = self.camera.position.x - self.camera.target.x,
+                                .y = self.camera.position.y - self.camera.target.y,
+                                .z = self.camera.position.z - self.camera.target.z,
+                            };
+                            const normal = shared.utility.vector3.scale(shared.utility.vector3.normalize(direction), raylib.getFrameTime() * self.cameraSlideSpeed);
+                            self.camera.position = shared.utility.vector3.add(self.camera.position, normal);
+                            self.camera.target = shared.utility.vector3.add(self.camera.target, normal);
+                        } else if (raylib.isKeyDown(.left)) {
+                            const forward = shared.utility.vector3.normalize(raylib.Vector3{
+                                .x = self.camera.target.x - self.camera.position.x,
+                                .y = self.camera.target.y - self.camera.position.y,
+                                .z = self.camera.target.z - self.camera.position.z,
+                            });
+                            const right = shared.utility.vector3.normalize(shared.utility.vector3.cross(forward, self.camera.up));
+                            const movement = shared.utility.vector3.scale(right, -raylib.getFrameTime() * self.cameraSlideSpeed);
+                            self.camera.position = shared.utility.vector3.add(self.camera.position, movement);
+                            self.camera.target = shared.utility.vector3.add(self.camera.target, movement);
+                        } else if (raylib.isKeyDown(.right)) {
+                            const forward = shared.utility.vector3.normalize(raylib.Vector3{
+                                .x = self.camera.target.x - self.camera.position.x,
+                                .y = self.camera.target.y - self.camera.position.y,
+                                .z = self.camera.target.z - self.camera.position.z,
+                            });
+                            const right = shared.utility.vector3.normalize(shared.utility.vector3.cross(forward, self.camera.up));
+                            const movement = shared.utility.vector3.scale(right, raylib.getFrameTime() * self.cameraSlideSpeed);
+                            self.camera.position = shared.utility.vector3.add(self.camera.position, movement);
+                            self.camera.target = shared.utility.vector3.add(self.camera.target, movement);
+                        }
+                    },
+                }
             }
         }
+    }
 
-        if (self.state == EditorState.Editing) {
-            if (!handled and mouseInEditorWindow() and raylib.isMouseButtonReleased(.left)) {
-                self.state = EditorState.Interacting;
-                raylib.hideCursor();
-            }
-
-            if (raylib.isKeyReleased(.escape)) {
-                self.objectSelected = false;
-            }
-        } else if (self.state == EditorState.Interacting) {
-            if (raylib.isKeyPressed(.escape)) {
-                self.state = EditorState.Editing;
-                raylib.showCursor();
-            }
-        }
+    pub fn setState(self: *EditorWindow, state: EditorState) void {
+        self.state = state;
     }
 
     fn mouseInEditorWindow() bool {
@@ -163,15 +186,15 @@ pub const EditorWindow = struct {
         try self.sceneWindow.draw();
         try self.propertyWindow.draw();
 
-        if (self.state == EditorState.Interacting) {
-            _ = raygui.guiStatusBar(raylib.Rectangle{ .x = 0.0, .y = self.h - 25.0, .height = 25.0, .width = self.w }, "Press ESC to edit.");
-        }
-
         if (self.module) {
             _ = raygui.guiUnlock();
         }
         if (self.module and self.ofd.open) {
             try self.ofd.draw();
+        }
+
+        if (self.module and self.mb.open) {
+            try self.mb.draw();
         }
     }
 
@@ -191,17 +214,24 @@ pub const EditorWindow = struct {
 
                 std.debug.print("Loaded scene\n", .{});
             } else {
-                std.debug.print("Failed to load scene\n", .{});
+                //std.debug.print("Failed to load scene\n", .{});
+                dialog.editor.showMessageBox("Error", "Failed to load scene", ui.dialog.MessageBoxType.Error) catch unreachable;
             }
         } else {
-            std.debug.print("Invalid file type\n", .{});
+            //std.debug.print("Invalid file type\n", .{});
+            dialog.editor.showMessageBox("Error", "Invalid file type", ui.dialog.MessageBoxType.Error) catch unreachable;
         }
 
         std.debug.print("File: {s}\n", .{file});
     }
+
+    pub fn showMessageBox(self: *EditorWindow, title: []const u8, message: []const u8, mbtype: ui.dialog.MessageBoxType) anyerror!void {
+        self.module = true;
+        try self.mb.openDialog(title, message, mbtype, &mbCallback);
+    }
 };
 
 pub const EditorState = enum {
-    Interacting,
-    Editing,
+    Grab,
+    Move,
 };
