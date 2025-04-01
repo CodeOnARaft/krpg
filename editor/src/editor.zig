@@ -59,14 +59,6 @@ pub const EditorWindow = struct {
 
         self.objectManager = shared.managers.ObjectsManager{};
         try self.objectManager.init();
-
-        try self.mb.openDialog(
-            "Message Box",
-            "Test Message",
-            ui.dialog.MessageBoxType.Info,
-            &mbCallback,
-        );
-        self.module = true;
     }
 
     pub fn mbCallback(dd: *ui.dialog.MessageBox, result: i32) anyerror!void {
@@ -84,6 +76,7 @@ pub const EditorWindow = struct {
 
     pub fn update(self: *EditorWindow) !void {
         var handled = try self.ofd.update();
+        handled = try self.mb.update() or handled;
         if (handled) {
             return;
         }
@@ -221,13 +214,20 @@ pub const EditorWindow = struct {
 
                 std.debug.print("Loaded scene\n", .{});
             } else {
-                std.debug.print("Failed to load scene\n", .{});
+                //std.debug.print("Failed to load scene\n", .{});
+                dialog.editor.showMessageBox("Error", "Failed to load scene", ui.dialog.MessageBoxType.Error) catch unreachable;
             }
         } else {
-            std.debug.print("Invalid file type\n", .{});
+            //std.debug.print("Invalid file type\n", .{});
+            dialog.editor.showMessageBox("Error", "Invalid file type", ui.dialog.MessageBoxType.Error) catch unreachable;
         }
 
         std.debug.print("File: {s}\n", .{file});
+    }
+
+    pub fn showMessageBox(self: *EditorWindow, title: []const u8, message: []const u8, mbtype: ui.dialog.MessageBoxType) anyerror!void {
+        self.module = true;
+        try self.mb.openDialog(title, message, mbtype, &mbCallback);
     }
 };
 

@@ -21,6 +21,8 @@ pub const MessageBox = struct {
     editor: *EditorWindow = undefined,
     callBackFunction: *const fn (*MessageBox, result: i32) anyerror!void = undefined,
     type: MessageBoxType = MessageBoxType.Info,
+    borderColor: raylib.Color = undefined,
+    backgroundColor: raylib.Color = undefined,
 
     pub fn openDialog(self: *MessageBox, title: []const u8, message: []const u8, boxType: MessageBoxType, callBackFunction: *const fn (*MessageBox, i32) anyerror!void) !void {
         self.open = true;
@@ -28,6 +30,17 @@ pub const MessageBox = struct {
         self.title = title;
         self.message = message;
         self.type = boxType;
+    }
+
+    pub fn update(self: *MessageBox) !bool {
+        var handled = false;
+        if (!self.open) {
+            return handled;
+        }
+
+        handled = true;
+
+        return handled;
     }
 
     pub fn init(self: *MessageBox, editor: *EditorWindow) !void {
@@ -39,6 +52,12 @@ pub const MessageBox = struct {
         self.title = "Message Box";
         self.message = "Message";
         self.location = raylib.Rectangle{ .x = x, .y = y, .width = ui.Constants.MB_WIDTHf, .height = ui.Constants.MB_HEIGHTf };
+
+        const style = raygui.guiGetStyle(raygui.GuiControl.default, raygui.GuiDefaultProperty.background_color);
+        self.backgroundColor = raylib.fade(raylib.getColor(@intCast(style)), 1);
+
+        const style2 = raygui.guiGetStyle(raygui.GuiControl.dropdownbox, raygui.GuiControlProperty.border_color_normal);
+        self.borderColor = raylib.fade(raylib.getColor(@intCast(style2)), 1);
     }
 
     pub fn draw(self: *MessageBox) !void {
@@ -52,7 +71,7 @@ pub const MessageBox = struct {
             @intFromFloat(self.location.y),
             @intFromFloat(self.location.width),
             26,
-            raylib.Color.dark_green,
+            self.backgroundColor,
         );
         raylib.drawRectangle(
             @intFromFloat(self.location.x),
@@ -62,7 +81,7 @@ pub const MessageBox = struct {
             raylib.Color.black,
         );
 
-        raylib.drawRectangleLines(@intFromFloat(self.location.x), @intFromFloat(self.location.y), @intFromFloat(self.location.width), @intFromFloat(self.location.height), raylib.Color.green);
+        raylib.drawRectangleLines(@intFromFloat(self.location.x), @intFromFloat(self.location.y), @intFromFloat(self.location.width), @intFromFloat(self.location.height), self.borderColor);
 
         const buffer = try allocator.allocSentinel(u8, self.title.len, 0);
         std.mem.copyForwards(u8, buffer[0..self.title.len], self.title);
@@ -71,17 +90,18 @@ pub const MessageBox = struct {
 
         const buffer2 = try allocator.allocSentinel(u8, self.message.len, 0);
         std.mem.copyForwards(u8, buffer2[0..self.message.len], self.message);
-        raylib.drawText(buffer2, @intFromFloat(self.location.x + 10), @intFromFloat(self.location.y + 30), 16, raylib.Color.white);
+        raylib.drawText(buffer2, @intFromFloat(self.location.x + 10), @intFromFloat(self.location.y + 30), 20, raylib.Color.white);
         allocator.free(buffer2);
 
         var result: i32 = 0;
+        const buttonY: f32 = self.location.y + self.location.height - 40;
         if (self.type == MessageBoxType.Confirm) {
             const ok = raygui.guiButton(
-                raylib.Rectangle{ .x = @as(f32, self.location.x + 10), .y = @as(f32, self.location.y + 50), .width = 100, .height = 30 },
+                raylib.Rectangle{ .x = @as(f32, self.location.x + 10), .y = buttonY, .width = 100, .height = 30 },
                 "OK",
             );
             const cancel = raygui.guiButton(
-                raylib.Rectangle{ .x = @as(f32, self.location.x + 120), .y = @as(f32, self.location.y + 50), .width = 100, .height = 30 },
+                raylib.Rectangle{ .x = @as(f32, self.location.x + 120), .y = buttonY, .width = 100, .height = 30 },
                 "Cancel",
             );
 
@@ -90,9 +110,9 @@ pub const MessageBox = struct {
             } else if (cancel > 0) {
                 result = 2;
             }
-        } else if (self.type == MessageBoxType.Error) {} else {
+        } else {
             const ok = raygui.guiButton(
-                raylib.Rectangle{ .x = @as(f32, self.location.x + 10), .y = @as(f32, self.location.y + 50), .width = 100, .height = 30 },
+                raylib.Rectangle{ .x = @as(f32, self.location.x + 10), .y = buttonY, .width = 100, .height = 30 },
                 "OK",
             );
 
