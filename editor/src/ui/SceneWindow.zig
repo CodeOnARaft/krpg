@@ -81,6 +81,7 @@ pub const SceneWindow = struct {
                     std.debug.print("Object selected: {s}\n", .{obj.name});
                     self.editor.objectSelected = true;
                     self.editor.selectedObject = shared.types.interfaces.EditorSelectedInterface.init(&self.editor.currentScene.loadedObjects.items[i]);
+                    self.editor.setCameraLookAt(obj.position);
                 }
             }
             y += 30;

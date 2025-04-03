@@ -229,6 +229,20 @@ pub const EditorWindow = struct {
         self.module = true;
         try self.mb.openDialog(title, message, mbtype, &mbCallback);
     }
+
+    pub fn setCameraLookAt(self: *EditorWindow, position: raylib.Vector3) void {
+        self.camera.target = position;
+        self.camera.position = raylib.Vector3{
+            .x = position.x + 4,
+            .y = position.y + 4,
+            .z = position.z + 4,
+        };
+        self.camera.up = raylib.Vector3{
+            .x = 0,
+            .y = 1,
+            .z = 0,
+        };
+    }
 };
 
 pub const EditorState = enum {
