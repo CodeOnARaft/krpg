@@ -121,10 +121,36 @@ pub const ObjectInstance = struct {
         _ = raygui.guiLabel(raylib.Rectangle{ .x = position.x + 5, .y = position.y + 100, .width = 100, .height = 20 }, "Z:");
     }
 
-    pub fn drawSelected(self: *ObjectInstance) anyerror!void {
+    pub fn drawSelected(self: *ObjectInstance, mode: shared.managers.ObjectManagerModes) anyerror!void {
         self.objectManager.drawSelected(self.type, self.position) catch |err| {
             std.debug.print("Error drawing selected object: {}\n", .{err});
             return err;
         };
+
+        const smallScale = 0.25;
+        const bigScale = 2.5;
+        const bigScaleOffset = 0.5 * bigScale;
+
+        switch (mode) {
+            shared.managers.ObjectManagerModes.Grab => {},
+            shared.managers.ObjectManagerModes.Move => {
+                raylib.drawCube(raylib.Vector3{
+                    .x = self.position.x + bigScaleOffset,
+                    .y = self.position.y,
+                    .z = self.position.z,
+                }, bigScale, smallScale, smallScale, raylib.Color.red);
+                raylib.drawCube(raylib.Vector3{
+                    .x = self.position.x,
+                    .y = self.position.y + bigScaleOffset,
+                    .z = self.position.z,
+                }, smallScale, bigScale, smallScale, raylib.Color.blue);
+                raylib.drawCube(raylib.Vector3{
+                    .x = self.position.x,
+                    .y = self.position.y,
+                    .z = self.position.z + bigScaleOffset,
+                }, smallScale, smallScale, bigScale, raylib.Color.yellow);
+            },
+            shared.managers.ObjectManagerModes.Rotation => {},
+        }
     }
 };

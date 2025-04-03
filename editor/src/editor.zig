@@ -173,7 +173,7 @@ pub const EditorWindow = struct {
             if (self.sceneLoaded) {
                 try self.currentScene.draw();
                 if (self.objectSelected) {
-                    try self.selectedObject.drawSelected();
+                    try self.selectedObject.drawSelected(self.GetObjectMode());
                 }
             }
             raylib.drawGrid(100, 10);
@@ -201,6 +201,13 @@ pub const EditorWindow = struct {
     pub fn openFile(self: *EditorWindow) !void {
         self.module = true;
         try self.ofd.openDialog(&openSceneFileCallback);
+    }
+
+    pub fn GetObjectMode(self: *EditorWindow) shared.managers.ObjectManagerModes {
+        return switch (self.state) {
+            EditorState.Grab => shared.managers.ObjectManagerModes.Grab,
+            EditorState.Move => shared.managers.ObjectManagerModes.Move,
+        };
     }
 
     pub fn openSceneFileCallback(dialog: *ui.dialog.OpenFileDialog, file: []const u8) anyerror!void {
@@ -236,11 +243,6 @@ pub const EditorWindow = struct {
             .x = position.x + 4,
             .y = position.y + 4,
             .z = position.z + 4,
-        };
-        self.camera.up = raylib.Vector3{
-            .x = 0,
-            .y = 1,
-            .z = 0,
         };
     }
 };

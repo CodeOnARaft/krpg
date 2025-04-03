@@ -103,3 +103,5 @@ pub const ObjectsManager = struct {
         }
     }
 };
+
+pub const ObjectManagerModes = enum { Grab, Move, Rotation };
