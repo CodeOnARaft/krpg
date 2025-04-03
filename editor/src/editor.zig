@@ -225,7 +225,7 @@ pub const EditorWindow = struct {
         std.debug.print("File: {s}\n", .{file});
     }
 
-    pub fn showMessageBox(self: *EditorWindow, title: []const u8, message: []const u8, mbtype: ui.dialog.MessageBoxType) anyerror!void {
+    pub fn showMessageBox(self: *EditorWindow, title: [:0]const u8, message: [:0]const u8, mbtype: ui.dialog.MessageBoxType) anyerror!void {
         self.module = true;
         try self.mb.openDialog(title, message, mbtype, &mbCallback);
     }

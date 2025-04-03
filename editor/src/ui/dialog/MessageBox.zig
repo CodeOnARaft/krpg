@@ -15,8 +15,8 @@ pub const MessageBoxType = enum {
 
 pub const MessageBox = struct {
     open: bool = false,
-    title: []const u8 = undefined,
-    message: []const u8 = undefined,
+    title: [:0]const u8 = undefined,
+    message: [:0]const u8 = undefined,
     location: raylib.Rectangle = undefined,
     editor: *EditorWindow = undefined,
     callBackFunction: *const fn (*MessageBox, result: i32) anyerror!void = undefined,
@@ -24,7 +24,7 @@ pub const MessageBox = struct {
     borderColor: raylib.Color = undefined,
     backgroundColor: raylib.Color = undefined,
 
-    pub fn openDialog(self: *MessageBox, title: []const u8, message: []const u8, boxType: MessageBoxType, callBackFunction: *const fn (*MessageBox, i32) anyerror!void) !void {
+    pub fn openDialog(self: *MessageBox, title: [:0]const u8, message: [:0]const u8, boxType: MessageBoxType, callBackFunction: *const fn (*MessageBox, i32) anyerror!void) !void {
         self.open = true;
         self.callBackFunction = callBackFunction;
         self.title = title;
@@ -61,7 +61,7 @@ pub const MessageBox = struct {
     }
 
     pub fn draw(self: *MessageBox) !void {
-        const allocator = std.heap.page_allocator;
+        // const allocator = std.heap.page_allocator;
         if (!self.open) {
             return;
         }
@@ -83,15 +83,9 @@ pub const MessageBox = struct {
 
         raylib.drawRectangleLines(@intFromFloat(self.location.x), @intFromFloat(self.location.y), @intFromFloat(self.location.width), @intFromFloat(self.location.height), self.borderColor);
 
-        const buffer = try allocator.allocSentinel(u8, self.title.len, 0);
-        std.mem.copyForwards(u8, buffer[0..self.title.len], self.title);
-        raylib.drawText(buffer, @intFromFloat(self.location.x + 10), @intFromFloat(self.location.y + 5), 16, raylib.Color.white);
-        allocator.free(buffer);
+        raylib.drawText(self.title, @intFromFloat(self.location.x + 10), @intFromFloat(self.location.y + 5), 16, raylib.Color.white);
 
-        const buffer2 = try allocator.allocSentinel(u8, self.message.len, 0);
-        std.mem.copyForwards(u8, buffer2[0..self.message.len], self.message);
-        raylib.drawText(buffer2, @intFromFloat(self.location.x + 10), @intFromFloat(self.location.y + 30), 20, raylib.Color.white);
-        allocator.free(buffer2);
+        raylib.drawText(self.message, @intFromFloat(self.location.x + 10), @intFromFloat(self.location.y + 30), 20, raylib.Color.white);
 
         var result: i32 = 0;
         const buttonY: f32 = self.location.y + self.location.height - 40;
