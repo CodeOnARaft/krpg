@@ -80,7 +80,8 @@ pub const GameManager = struct {
             self.console.consoleToggle();
         }
 
-        self.gameTimeManager.update();
+        try self.gameTimeManager.update();
+
         try self.activeView.update();
     }
 

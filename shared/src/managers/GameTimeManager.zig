@@ -33,17 +33,6 @@ fn getDayOfWeek(year: u32, month: u8, day: u8) []const u8 {
     return days[dayIndex];
 }
 
-pub fn getCurrentTimeString(self: *GameTimeManager, allocator: *std.mem.Allocator) ![]u8 {
-    const dayOfWeek = getDayOfWeek(self.year, self.month, self.day);
-    const monthName = getMonthName(self.month);
-    const daySuffix = getDaySuffix(self.day);
-
-    return try std.fmt.allocPrint(
-        allocator,
-        "{s}, {d}{s} of {s} in the year {d}",
-        .{ dayOfWeek, self.day, daySuffix, monthName, self.year },
-    );
-}
 pub const GameTimeManager = struct {
     year: u32,
     month: u8,
@@ -63,10 +52,11 @@ pub const GameTimeManager = struct {
         };
     }
 
-    pub fn update(self: *GameTimeManager) void {
+    pub fn update(self: *GameTimeManager) !void {
         self.timePassed += raylib.getFrameTime();
 
         if (self.timePassed >= 3.0) { // 20 game minutes per real life minute
+            self.minute += 1;
             if (self.minute >= 60) {
                 self.minute -= 60;
                 self.hour += 1;
@@ -83,6 +73,14 @@ pub const GameTimeManager = struct {
                     }
                 }
             }
+
+            self.timePassed = 0.0;
+        }
+
+        if (raylib.isKeyReleased(.f2)) {
+            const timeString = try self.getCurrentTimeString();
+            defer std.heap.page_allocator.free(timeString);
+            std.debug.print("Current time: {s}\n", .{timeString});
         }
     }
 
@@ -93,5 +91,20 @@ pub const GameTimeManager = struct {
         self.hour = hour;
         self.minute = minute;
         self.timePassed = 0.0;
+    }
+
+    pub fn getCurrentTimeString(self: *GameTimeManager) ![]u8 {
+        //const dayOfWeek = getDayOfWeek(self.year, self.month, self.day);
+        const monthName = getMonthName(self.month);
+        const daySuffix = getDaySuffix(self.day);
+        const day = @as(i32, self.day);
+
+        // const year: i32 = @truncate(@as(i64, self.year));
+
+        return try std.fmt.allocPrint(
+            std.heap.page_allocator,
+            "{d:02}:{d:02} on {d}{s} of {s} {d}",
+            .{ self.hour, self.minute, day, daySuffix, monthName, self.timePassed },
+        );
     }
 };
