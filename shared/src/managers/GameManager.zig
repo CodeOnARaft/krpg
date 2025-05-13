@@ -18,6 +18,7 @@ pub const GameManager = struct {
     activeView: interfaces.ActiveViewInterface = undefined,
     model: raylib.Model = undefined,
     objectManager: shared.managers.ObjectsManager = undefined,
+    gameTimeManager: shared.managers.GameTimeManager = undefined,
 
     pub fn initialize(self: *GameManager) !void {
         self.console = types.Console{};
@@ -48,6 +49,8 @@ pub const GameManager = struct {
 
         self.inventory = types.GameObjects.Inventory{};
         self.inventory.init(self, 100);
+
+        self.gameTimeManager = shared.managers.GameTimeManager.init();
     }
 
     pub fn changeView(self: *GameManager, view: types.Views) anyerror!void {
@@ -77,6 +80,7 @@ pub const GameManager = struct {
             self.console.consoleToggle();
         }
 
+        self.gameTimeManager.update();
         try self.activeView.update();
     }
 
