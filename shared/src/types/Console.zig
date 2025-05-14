@@ -16,6 +16,10 @@ pub const ConsoleState = enum {
     pub fn isSliding(self: ConsoleState) bool {
         return self == ConsoleState.Closing or self == ConsoleState.Opening;
     }
+
+    pub fn isVisible(self: ConsoleState) bool {
+        return self != ConsoleState.Closed;
+    }
 };
 
 const consoleMinHeight = 10.0;
@@ -32,6 +36,10 @@ pub const Console = struct {
 
     pub fn init(self: *Console, game_manager: *managers.GameManager) void {
         self.game_manager = game_manager;
+    }
+
+    pub fn Visible(self: *Console) bool {
+        return self.state.isVisible();
     }
 
     pub fn drawConsole(self: *Console) void {
@@ -137,6 +145,16 @@ pub const Console = struct {
 
             std.debug.print("Seconds provided: {s}\n", .{sec});
 
+            return;
+        }
+
+        if (command.len >= "TIME".len and std.mem.eql(u8, command[0.."TIME".len], "TIME")) {
+            const time_str = self.game_manager.gameTimeManager.getCurrentTimeString() catch |err| {
+                std.debug.print("Error getting time string: {}\n", .{err});
+                return;
+            };
+            defer std.heap.page_allocator.free(time_str);
+            std.debug.print("Current Game Time: {s}\n", .{time_str});
             return;
         }
 

@@ -72,6 +72,8 @@ pub const GameManager = struct {
             return;
         }
 
+        try self.gameTimeManager.update();
+
         if (raylib.isKeyReleased(.f5)) {
             shared.settings.gameSettings.debug = !shared.settings.gameSettings.debug;
         }
@@ -80,9 +82,9 @@ pub const GameManager = struct {
             self.console.consoleToggle();
         }
 
-        try self.gameTimeManager.update();
-
-        try self.activeView.update();
+        if (!self.console.Visible()) {
+            try self.activeView.update();
+        }
     }
 
     pub fn draw(self: *GameManager) anyerror!void {

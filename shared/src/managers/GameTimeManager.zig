@@ -76,12 +76,6 @@ pub const GameTimeManager = struct {
 
             self.timePassed = 0.0;
         }
-
-        if (raylib.isKeyReleased(.f2)) {
-            const timeString = try self.getCurrentTimeString();
-            defer std.heap.page_allocator.free(timeString);
-            std.debug.print("Current time: {s}\n", .{timeString});
-        }
     }
 
     pub fn setTime(self: *GameTimeManager, year: u32, month: u8, day: u8, hour: u8, minute: u8) void {
@@ -104,7 +98,7 @@ pub const GameTimeManager = struct {
         return try std.fmt.allocPrint(
             std.heap.page_allocator,
             "{d:02}:{d:02} on {d}{s} of {s} {d}",
-            .{ self.hour, self.minute, day, daySuffix, monthName, self.timePassed },
+            .{ self.hour, self.minute, day, daySuffix, monthName, self.year },
         );
     }
 };
