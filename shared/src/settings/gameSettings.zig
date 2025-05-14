@@ -30,6 +30,7 @@ const Settings = struct {
         var buf: [1024]u8 = undefined;
         while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
             var parts: ArrayList([]u8) = ArrayList([]u8).init(std.heap.page_allocator);
+            defer parts.deinit();
             var it = std.mem.splitScalar(u8, line, ' ');
 
             while (it.next()) |commandPart| {

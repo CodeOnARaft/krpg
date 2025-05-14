@@ -48,6 +48,8 @@ pub const Console = struct {
         }
 
         if (self.state == ConsoleState.Open or self.state.isSliding()) {
+            _ = gui.guiPanel(raylib.Rectangle{ .x = 0, .y = 0, .width = types.Constants.screenWidthf32, .height = self.height }, "Console");
+
             if (!self.state.isSliding()) {
                 const released = self.findKeyReleased();
                 if (released.isPressed) {
@@ -68,16 +70,15 @@ pub const Console = struct {
                         };
                     }
                 }
+
+                const terminal: []const u8 = std.fmt.allocPrint(std.heap.page_allocator, "> {s}", .{self.typedText}) catch |err| {
+                    std.debug.print("Error allocating terminal: {}\n", .{err});
+                    return;
+                };
+                defer std.heap.page_allocator.free(terminal);
+
+                _ = gui.guiLabel(raylib.Rectangle{ .x = 5, .y = types.Constants.screenHeightf32 / 2 - 25, .width = types.Constants.screenWidthf32 - 10, .height = 20 }, @ptrCast(terminal));
             }
-
-            const terminal: []const u8 = std.fmt.allocPrint(std.heap.page_allocator, "> {s}", .{self.typedText}) catch |err| {
-                std.debug.print("Error allocating terminal: {}\n", .{err});
-                return;
-            };
-            defer std.heap.page_allocator.free(terminal);
-
-            _ = gui.guiPanel(raylib.Rectangle{ .x = 0, .y = 0, .width = types.Constants.screenWidthf32, .height = self.height }, "Console");
-            _ = gui.guiLabel(raylib.Rectangle{ .x = 5, .y = types.Constants.screenHeightf32 / 2 - 25, .width = types.Constants.screenWidthf32 - 10, .height = 20 }, @ptrCast(terminal));
         }
     }
 

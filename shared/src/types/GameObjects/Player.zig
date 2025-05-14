@@ -9,14 +9,16 @@ const util = shared.utility;
 
 pub const Player = struct {
     gameManager: *managers.GameManager = undefined,
+    health: f32 = 100.0,
+    mana: f32 = 100.0,
+    stamina: f32 = 100.0,
+    level: u32 = 1,
 
     pub fn init(self: *Player, gameManager: *managers.GameManager) void {
         self.gameManager = gameManager;
     }
 
     pub fn update(self: *Player) anyerror!void {
-        _ = self.gameManager.console;
-
         if (raylib.isKeyReleased(.i)) {
             try self.gameManager.changeView(.Inventory);
         }

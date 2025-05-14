@@ -64,6 +64,9 @@ pub const GameManager = struct {
             types.Views.Character => {
                 self.activeView = interfaces.ActiveViewInterface.init(&self.player);
             },
+            types.Views.Map => {
+                self.activeView = interfaces.ActiveViewInterface.init(&self.currentScene);
+            },
         }
     }
 
