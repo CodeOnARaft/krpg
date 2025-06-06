@@ -33,6 +33,8 @@ pub const Console = struct {
     game_manager: *managers.GameManager = undefined,
     lastKeyCode: raylib.KeyboardKey = raylib.KeyboardKey.null,
     lastRead: f32 = 0.0,
+    arena: std.heap.ArenaAllocator = undefined,
+    allocator: std.mem.Allocator = undefined,
 
     pub fn init(self: *Console, game_manager: *managers.GameManager) void {
         self.game_manager = game_manager;
@@ -54,28 +56,26 @@ pub const Console = struct {
                 const released = self.findKeyReleased();
                 if (released.isPressed) {
                     if (released.isBackspace) {
-                        self.typedText = util.string.removeCharConstU8(std.heap.page_allocator, self.typedText) catch |err| {
+                        self.typedText = util.string.removeCharConstU8(self.allocator, self.typedText) catch |err| {
                             std.debug.print("Error removing char: {}\n", .{err});
                             return;
                         };
                     } else if (released.isEnter) {
                         std.debug.print("Typed text: {s}\n", .{self.typedText});
                         self.handleCommand(self.typedText);
-                        std.heap.page_allocator.free(self.typedText);
                         self.typedText = "";
                     } else {
-                        self.typedText = util.string.appendCharConstU8(std.heap.page_allocator, self.typedText, released.value) catch |err| {
+                        self.typedText = util.string.appendCharConstU8(self.allocator, self.typedText, released.value) catch |err| {
                             std.debug.print("Error appending char: {}\n", .{err});
                             return;
                         };
                     }
                 }
 
-                const terminal: []const u8 = std.fmt.allocPrint(std.heap.page_allocator, "> {s}", .{self.typedText}) catch |err| {
+                const terminal: []const u8 = std.fmt.allocPrint(self.allocator, "> {s}", .{self.typedText}) catch |err| {
                     std.debug.print("Error allocating terminal: {}\n", .{err});
                     return;
                 };
-                defer std.heap.page_allocator.free(terminal);
 
                 _ = gui.guiLabel(raylib.Rectangle{ .x = 5, .y = types.Constants.screenHeightf32 / 2 - 25, .width = types.Constants.screenWidthf32 - 10, .height = 20 }, @ptrCast(terminal));
             }
@@ -96,6 +96,8 @@ pub const Console = struct {
                 self.height = consoleMinHeight;
                 self.state = ConsoleState.Closed;
                 shared.settings.gameSettings.paused = false;
+                self.arena.deinit();
+                self.typedText = "";
             }
         }
     }
@@ -117,6 +119,8 @@ pub const Console = struct {
             return;
         }
 
+        self.arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+        self.allocator = self.arena.allocator();
         shared.settings.gameSettings.paused = true;
         self.height = consoleMinHeight;
         self.state = ConsoleState.Opening;
@@ -154,7 +158,6 @@ pub const Console = struct {
                 std.debug.print("Error getting time string: {}\n", .{err});
                 return;
             };
-            defer std.heap.page_allocator.free(time_str);
             std.debug.print("Current Game Time: {s}\n", .{time_str});
             return;
         }
