@@ -26,10 +26,31 @@ pub const NPC = struct {
     }
 
     pub fn draw(self: *NPC, camera: raylib.Camera3D) void {
-        if (self.texture.id == 0 or !self.active) {
+        if (!self.active) {
             return;
         }
 
+        // More thorough texture validation
+        if (self.texture.id == 0 or self.texture.width == 0 or self.texture.height == 0) {
+            std.debug.print("NPC {s}: Invalid texture (id: {}, width: {}, height: {})\n", .{ self.name, self.texture.id, self.texture.width, self.texture.height });
+            return;
+        }
+
+        // Validate position values
+        if (std.math.isNan(self.position.x) or std.math.isNan(self.position.y) or std.math.isNan(self.position.z) or
+            std.math.isInf(self.position.x) or std.math.isInf(self.position.y) or std.math.isInf(self.position.z)) {
+            std.debug.print("NPC {s}: Invalid position ({}, {}, {})\n", .{ self.name, self.position.x, self.position.y, self.position.z });
+            return;
+        }
+
+        // Validate camera
+        if (std.math.isNan(camera.position.x) or std.math.isNan(camera.position.y) or std.math.isNan(camera.position.z)) {
+            std.debug.print("NPC {s}: Invalid camera position ({}, {}, {})\n", .{ self.name, camera.position.x, camera.position.y, camera.position.z });
+            return;
+        }
+
+        std.debug.print("Drawing NPC {s}: texture_id={}, pos=({}, {}, {})\n", .{ self.name, self.texture.id, self.position.x, self.position.y, self.position.z });
+        
         raylib.drawBillboard(camera, self.texture, self.position, 2.0, raylib.Color.white);
         if (settings.gameSettings.debug) {
             self.trigger.draw();
@@ -93,7 +114,16 @@ pub const NPC = struct {
                 const textureFilename = try std.fmt.allocPrint(arena_allocator, "{s}/{s}", .{ shared.settings.gameSettings.resourceDirectory, parts.items[1] });
 
                 const fff = try shared.utility.string.toSentinelConstU8(arena_allocator, textureFilename);
-                npc.texture = try raylib.loadTexture(std.mem.span(fff));
+                std.debug.print("Loading texture: {s}\n", .{textureFilename});
+
+                npc.texture = raylib.loadTexture(std.mem.span(fff)) catch |err| {
+                    std.debug.print("Failed to load texture {s}: {}\n", .{ textureFilename, err });
+                    // Set a default/empty texture
+                    npc.texture = raylib.Texture2D{ .id = 0, .width = 0, .height = 0, .mipmaps = 0, .format = .uncompressed_grayscale };
+                    continue;
+                };
+
+                std.debug.print("Loaded texture: id={}, {}x{}\n", .{ npc.texture.id, npc.texture.width, npc.texture.height });
             } else if (std.mem.eql(u8, parts.items[0], "location")) {
                 const npc_x = std.fmt.parseFloat(f32, parts.items[1]) catch |err| {
                     std.debug.print("Error parsing x: {}\n", .{err});

@@ -214,11 +214,11 @@ pub const EditorWindow = struct {
         dialog.editor.module = false;
 
         if (std.mem.endsWith(u8, file, ".scn")) {
-            const testScene = try types.Scene.load(file, &dialog.editor.objectManager);
+            const testScene = try types.Scene.load(std.heap.page_allocator, file, &dialog.editor.objectManager);
             if (testScene != null) {
                 dialog.editor.currentScene = testScene.?;
                 dialog.editor.sceneLoaded = true;
-
+                dialog.editor.currentScene.camera = &dialog.editor.camera;
                 std.debug.print("Loaded scene\n", .{});
             } else {
                 //std.debug.print("Failed to load scene\n", .{});
