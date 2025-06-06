@@ -36,10 +36,13 @@ pub const NPC = struct {
         }
     }
 
-    pub fn load(scene_name: []const u8, x: i32, z: i32, scene: *types.Scene) !void {
+    pub fn load(allocator: std.mem.Allocator, scene_name: []const u8, x: i32, z: i32, scene: *types.Scene) !void {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        const arena_allocator = arena.allocator();
+
         const cwd = std.fs.cwd();
-        const allocator = std.heap.page_allocator;
-        const filename = std.fmt.allocPrint(allocator, "{s}/map/{s}_{}_{}.npc", .{ shared.settings.gameSettings.resourceDirectory, scene_name, x, z }) catch |err| {
+        const filename = std.fmt.allocPrint(arena_allocator, "{s}/map/{s}_{}_{}.npc", .{ shared.settings.gameSettings.resourceDirectory, scene_name, x, z }) catch |err| {
             std.debug.print("Error allocating filename: {}\n", .{err});
             return err;
         };
@@ -53,7 +56,6 @@ pub const NPC = struct {
         var buf_reader = std.io.bufferedReader(file.reader());
         var in_stream = buf_reader.reader();
         var buf: [1024]u8 = undefined;
-        //var index: usize = 0;
         var npc = types.GameObjects.NPC{};
         while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
             var lline = line;
@@ -61,7 +63,7 @@ pub const NPC = struct {
                 lline = line[0 .. line.len - 1];
             }
             std.debug.print("NPC Line: {s}\n", .{line});
-            var parts: ArrayList([]u8) = ArrayList([]u8).init(std.heap.page_allocator);
+            var parts: ArrayList([]u8) = ArrayList([]u8).init(arena_allocator);
             var it = std.mem.splitScalar(u8, lline, ' ');
 
             while (it.next()) |commandPart| {
@@ -82,15 +84,15 @@ pub const NPC = struct {
                 }
 
                 std.debug.print("NPC: {s}\n", .{parts.items[1]});
+                const name_copy = try allocator.dupe(u8, parts.items[1]);
                 npc = types.GameObjects.NPC{
-                    .name = parts.items[1],
+                    .name = name_copy,
                     .active = true,
                 };
             } else if (std.mem.eql(u8, parts.items[0], "texture")) {
-                const textureFilename = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ shared.settings.gameSettings.resourceDirectory, parts.items[1] });
-                defer allocator.free(textureFilename);
+                const textureFilename = try std.fmt.allocPrint(arena_allocator, "{s}/{s}", .{ shared.settings.gameSettings.resourceDirectory, parts.items[1] });
 
-                const fff = try shared.utility.string.toSentinelConstU8(allocator, textureFilename);
+                const fff = try shared.utility.string.toSentinelConstU8(arena_allocator, textureFilename);
                 npc.texture = try raylib.loadTexture(std.mem.span(fff));
             } else if (std.mem.eql(u8, parts.items[0], "location")) {
                 const npc_x = std.fmt.parseFloat(f32, parts.items[1]) catch |err| {

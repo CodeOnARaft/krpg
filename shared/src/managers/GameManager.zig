@@ -32,7 +32,7 @@ pub const GameManager = struct {
         self.objectManager = shared.managers.ObjectsManager{};
         try self.objectManager.init();
 
-        const loadedScene = try types.Scene.load("overworld.scn", &self.objectManager);
+        const loadedScene = try types.Scene.load(std.heap.page_allocator, "overworld.scn", &self.objectManager);
         if (loadedScene == null) {
             self.closeWindow = true;
             return;

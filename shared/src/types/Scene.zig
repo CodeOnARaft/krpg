@@ -32,16 +32,18 @@ pub const Scene = struct {
         return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(std.heap.page_allocator), .loadedObjects = ArrayList(types.GameObjects.ObjectInstance).init(std.heap.page_allocator), .loadedNPCs = ArrayList(types.GameObjects.NPC).init(std.heap.page_allocator) };
     }
 
-    pub fn load(scene_name: []const u8, objectManager: *shared.managers.ObjectsManager) !?Scene {
+    pub fn load(allocator: std.mem.Allocator, scene_name: []const u8, objectManager: *shared.managers.ObjectsManager) !?Scene {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        const arena_allocator = arena.allocator();
+
         var scene = try new();
         scene.objectManager = objectManager;
         scene.currentTrigger = types.emptyTriggerPtr;
 
         const cwd = std.fs.cwd();
-        const allocator = std.heap.page_allocator;
-        const filename = try std.fmt.allocPrint(allocator, "{s}/map/{s}", .{ shared.settings.gameSettings.resourceDirectory, scene_name });
+        const filename = try std.fmt.allocPrint(arena_allocator, "{s}/map/{s}", .{ shared.settings.gameSettings.resourceDirectory, scene_name });
         std.debug.print("Loading scene: {s}\n", .{filename});
-        defer allocator.free(filename);
 
         const file = cwd.openFile(filename, std.fs.File.OpenFlags{}) catch |err| {
             std.debug.print("Error opening file: {s},{}\n", .{ filename, err });
@@ -65,8 +67,7 @@ pub const Scene = struct {
         var in_stream = buf_reader.reader();
         var buf: [1024]u8 = undefined;
         while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
-            var parts: ArrayList([]u8) = ArrayList([]u8).init(std.heap.page_allocator);
-            defer parts.deinit();
+            var parts: ArrayList([]u8) = ArrayList([]u8).init(arena_allocator);
 
             var it = std.mem.splitScalar(u8, line, ' ');
 
@@ -122,7 +123,7 @@ pub const Scene = struct {
                 std.debug.print("Loaded sector: {} {}\n", .{ sector.?.gridX, sector.?.gridZ });
                 try scene.loadedSectors.append(sector.?);
 
-                try types.GameObjects.NPC.load(sc_fn, x, z, &scene);
+                try types.GameObjects.NPC.load(allocator, sc_fn, x, z, &scene);
                 try types.GameObjects.ObjectInstance.load(sc_fn, x, z, &scene);
             }
         }
