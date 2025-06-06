@@ -45,13 +45,12 @@ pub fn build(b: *std.Build) !void {
         return;
     }
 
-    const shared = b.addModule("shared", .{
-        .root_source_file = b.path("../shared/src/root.zig"),
+    const shared_dep = b.dependency("shared", .{
+        .target = target,
+        .optimize = optimize,
     });
 
-    shared.addImport("raylib", raylib);
-
-    shared.addImport("raygui", raygui);
+    const shared = shared_dep.module("shared");
 
     // const lib = b.addStaticLibrary(.{
     //     .name = "editor",

@@ -52,22 +52,12 @@ pub fn build(b: *std.Build) !void {
     //     .root_source_file = b.path("src/Managers/_managers.zig"),
     // });
 
-    const shared = b.addModule("shared", .{
-        .root_source_file = b.path("../shared/src/root.zig"),
+    const shared_dep = b.dependency("shared", .{
+        .target = target,
+        .optimize = optimize,
     });
 
-    // add imports
-    // map_mod.addImport("raylib", raylib);
-    // utility_mod.addImport("raylib", raylib);
-    // types_mod.addImport("raylib", raylib);
-    // managers_mod.addImport("raylib", raylib);
-    shared.addImport("raylib", raylib);
-
-    // map_mod.addImport("raygui", raygui);
-    // utility_mod.addImport("raygui", raygui);
-    // types_mod.addImport("raygui", raygui);
-    // managers_mod.addImport("raygui", raygui);
-    shared.addImport("raygui", raygui);
+    const shared = shared_dep.module("shared");
 
     // map_mod.addImport("utility", utility_mod);
     // map_mod.addImport("shared", shared);
