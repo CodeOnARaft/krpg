@@ -13,14 +13,20 @@ pub fn main() anyerror!void {
     var gameManager = managers.GameManager{};
     try gameManager.initialize();
 
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
     while (!raylib.windowShouldClose() or gameManager.closeWindow) {
-        try gameManager.update();
+        defer _ = arena.reset(.retain_capacity);
+        const frame_allocator = arena.allocator();
+
+        try gameManager.update(frame_allocator);
 
         raylib.beginDrawing();
         defer raylib.endDrawing();
 
         raylib.clearBackground(raylib.Color.black);
 
-        try gameManager.draw();
+        try gameManager.draw(frame_allocator);
     }
 }

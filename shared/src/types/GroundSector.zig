@@ -113,8 +113,9 @@ pub const GroundSector = struct {
         self.startZ = @as(f32, @floatFromInt(self.gridZ)) * GroundSectorMaxZTriangles * GroundSectorScale;
     }
 
-    pub fn draw(self: *GroundSector) void {
+    pub fn draw(self: *GroundSector, frame_allocator: std.mem.Allocator) void {
         // std.debug.print("Drawing scene {}\n", .{self.triangles.len});
+        _ = frame_allocator;
         for (self.triangles) |triangle| {
             raylib.drawTriangle3D(triangle.a, triangle.b, triangle.c, triangle.color);
         }

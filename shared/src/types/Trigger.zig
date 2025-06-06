@@ -32,7 +32,8 @@ pub const Trigger = struct {
         };
     }
 
-    pub fn draw(self: *Trigger) void {
+    pub fn draw(self: *Trigger, frame_allocator: std.mem.Allocator) void {
+        _ = frame_allocator;
         raylib.drawBoundingBox(self.boundingBox, raylib.Color.blue);
     }
 

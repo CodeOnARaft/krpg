@@ -70,7 +70,7 @@ pub const GameManager = struct {
         }
     }
 
-    pub fn update(self: *GameManager) anyerror!void {
+    pub fn update(self: *GameManager, frame_allocator: std.mem.Allocator) anyerror!void {
         if (self.closeWindow) {
             return;
         }
@@ -86,16 +86,16 @@ pub const GameManager = struct {
         }
 
         if (!self.console.Visible()) {
-            try self.activeView.update();
+            try self.activeView.update(frame_allocator);
         }
     }
 
-    pub fn draw(self: *GameManager) anyerror!void {
+    pub fn draw(self: *GameManager, frame_allocator: std.mem.Allocator) anyerror!void {
         if (self.closeWindow) {
             return;
         }
 
-        try self.activeView.draw();
+        try self.activeView.draw(frame_allocator);
 
         self.console.drawConsole();
     }

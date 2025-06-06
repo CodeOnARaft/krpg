@@ -25,7 +25,7 @@ pub const NPC = struct {
         self.trigger.type = triggerType;
     }
 
-    pub fn draw(self: *NPC, camera: raylib.Camera3D) void {
+    pub fn draw(self: *NPC, frame_allocator: std.mem.Allocator, camera: raylib.Camera3D) void {
         if (!self.active) {
             return;
         }
@@ -38,7 +38,8 @@ pub const NPC = struct {
 
         // Validate position values
         if (std.math.isNan(self.position.x) or std.math.isNan(self.position.y) or std.math.isNan(self.position.z) or
-            std.math.isInf(self.position.x) or std.math.isInf(self.position.y) or std.math.isInf(self.position.z)) {
+            std.math.isInf(self.position.x) or std.math.isInf(self.position.y) or std.math.isInf(self.position.z))
+        {
             std.debug.print("NPC {s}: Invalid position ({}, {}, {})\n", .{ self.name, self.position.x, self.position.y, self.position.z });
             return;
         }
@@ -50,10 +51,10 @@ pub const NPC = struct {
         }
 
         std.debug.print("Drawing NPC {s}: texture_id={}, pos=({}, {}, {})\n", .{ self.name, self.texture.id, self.position.x, self.position.y, self.position.z });
-        
+
         raylib.drawBillboard(camera, self.texture, self.position, 2.0, raylib.Color.white);
         if (settings.gameSettings.debug) {
-            self.trigger.draw();
+            self.trigger.draw(frame_allocator);
         }
     }
 

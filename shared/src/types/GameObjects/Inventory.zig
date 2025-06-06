@@ -16,7 +16,8 @@ pub const Inventory = struct {
         self.gameManager = gameManager;
     }
 
-    pub fn update(self: *Inventory) anyerror!void {
+    pub fn update(self: *Inventory, frame_allocator: std.mem.Allocator) anyerror!void {
+        _ = frame_allocator;
         if (raylib.isKeyReleased(.i) or raylib.isKeyReleased(.escape)) {
             try self.gameManager.changeView(.Scene);
         }
@@ -26,7 +27,8 @@ pub const Inventory = struct {
         }
     }
 
-    pub fn draw(self: *Inventory) anyerror!void {
+    pub fn draw(self: *Inventory, frame_allocator: std.mem.Allocator) anyerror!void {
+        _ = frame_allocator;
         _ = self.items;
         raylib.clearBackground(raylib.Color.brown);
     }

@@ -204,7 +204,7 @@ pub const Console = struct {
                 std.debug.print("Seconds provided: {s}\n", .{sec});
             },
             .Time => {
-                const time_str = self.game_manager.gameTimeManager.getCurrentTimeString() catch |err| {
+                const time_str = self.game_manager.gameTimeManager.getCurrentTimeString(self.arena.allocator()) catch |err| {
                     std.debug.print("Error getting time string: {}\n", .{err});
                     return;
                 };

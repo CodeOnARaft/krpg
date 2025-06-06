@@ -18,7 +18,8 @@ pub const Player = struct {
         self.gameManager = gameManager;
     }
 
-    pub fn update(self: *Player) anyerror!void {
+    pub fn update(self: *Player, frame_allocator: std.mem.Allocator) anyerror!void {
+        _ = frame_allocator;
         if (raylib.isKeyReleased(.i)) {
             try self.gameManager.changeView(.Inventory);
         }
@@ -28,7 +29,8 @@ pub const Player = struct {
         }
     }
 
-    pub fn draw(self: *Player) anyerror!void {
+    pub fn draw(self: *Player, frame_allocator: std.mem.Allocator) anyerror!void {
+        _ = frame_allocator;
         _ = self.gameManager.console;
         raylib.clearBackground(raylib.Color.gray);
     }

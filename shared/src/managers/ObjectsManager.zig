@@ -85,7 +85,8 @@ pub const ObjectsManager = struct {
         std.debug.print("Loaded objects: {d}\n", .{self.objects.items.len});
     }
 
-    pub fn drawObject(self: *ObjectsManager, name: []const u8, position: raylib.Vector3) !void {
+    pub fn drawObject(self: *ObjectsManager, frame_allocator: std.mem.Allocator, name: []const u8, position: raylib.Vector3) !void {
+        _ = frame_allocator;
         for (self.objects.items) |object| {
             //std.debug.print("Checking object: {s} = {s}\n", .{ object.name, name });
             if (std.mem.eql(u8, object.name, name)) {

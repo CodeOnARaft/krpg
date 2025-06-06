@@ -180,7 +180,8 @@ pub const Scene = struct {
         return 0.0;
     }
 
-    pub fn update(self: *Scene) anyerror!void {
+    pub fn update(self: *Scene, frame_allocator: std.mem.Allocator) anyerror!void {
+        _ = frame_allocator; // Unused for now
         if (!shared.settings.gameSettings.paused and !shared.settings.gameSettings.editing) {
             self.gameManager.camera.update(.first_person);
             self.gameManager.camera.up = raylib.Vector3.init(0, 1, 0);
@@ -211,18 +212,18 @@ pub const Scene = struct {
         }
     }
 
-    pub fn draw(self: *Scene) anyerror!void {
+    pub fn draw(self: *Scene, frame_allocator: std.mem.Allocator) anyerror!void {
         {
             if (!shared.settings.gameSettings.editing) {
                 self.gameManager.camera.begin();
             }
 
             for (0..self.loadedSectors.items.len) |index| {
-                self.loadedSectors.items[index].draw();
+                self.loadedSectors.items[index].draw(frame_allocator);
             }
 
             for (0..self.loadedObjects.items.len) |index| {
-                try self.objectManager.drawObject(self.loadedObjects.items[index].type, self.loadedObjects.items[index].position);
+                try self.objectManager.drawObject(frame_allocator, self.loadedObjects.items[index].type, self.loadedObjects.items[index].position);
             }
 
             if (shared.settings.gameSettings.editing) {
@@ -231,7 +232,7 @@ pub const Scene = struct {
             }
 
             for (0..self.loadedNPCs.items.len) |index| {
-                self.loadedNPCs.items[index].draw(self.camera.*);
+                self.loadedNPCs.items[index].draw(frame_allocator, self.camera.*);
             }
 
             if (!shared.settings.gameSettings.editing) {
@@ -239,10 +240,11 @@ pub const Scene = struct {
             }
         }
 
-        self.drawUI();
+        self.drawUI(frame_allocator);
     }
 
-    pub fn drawUI(self: *Scene) void {
+    pub fn drawUI(self: *Scene, frame_allocator: std.mem.Allocator) void {
+        _ = frame_allocator; // Unused for now
         if (shared.settings.gameSettings.editing) {
             return;
         }

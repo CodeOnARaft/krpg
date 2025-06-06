@@ -87,7 +87,7 @@ pub const GameTimeManager = struct {
         self.timePassed = 0.0;
     }
 
-    pub fn getCurrentTimeString(self: *GameTimeManager) ![]u8 {
+    pub fn getCurrentTimeString(self: *GameTimeManager, allocator: std.mem.Allocator) ![]u8 {
         //const dayOfWeek = getDayOfWeek(self.year, self.month, self.day);
         const monthName = getMonthName(self.month);
         const daySuffix = getDaySuffix(self.day);
@@ -96,7 +96,7 @@ pub const GameTimeManager = struct {
         // const year: i32 = @truncate(@as(i64, self.year));
 
         return try std.fmt.allocPrint(
-            std.heap.page_allocator,
+            allocator,
             "{d:02}:{d:02} on {d}{s} of {s} {d}",
             .{ self.hour, self.minute, day, daySuffix, monthName, self.year },
         );
