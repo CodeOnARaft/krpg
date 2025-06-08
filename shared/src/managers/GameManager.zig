@@ -20,17 +20,17 @@ pub const GameManager = struct {
     objectManager: shared.managers.ObjectsManager = undefined,
     gameTimeManager: shared.managers.GameTimeManager = undefined,
 
-    pub fn initialize(self: *GameManager) !void {
+    pub fn initialize(self: *GameManager, allocator: std.mem.Allocator) !void {
         self.console = types.Console{};
         self.console.init(self);
         self.camera = &util.camera;
 
         self.oldCameraPosition = self.camera.position;
 
-        try shared.settings.gameSettings.init();
+        try shared.settings.gameSettings.init(allocator);
 
         self.objectManager = shared.managers.ObjectsManager{};
-        try self.objectManager.init();
+        try self.objectManager.init(allocator);
 
         const loadedScene = try types.Scene.load(std.heap.page_allocator, "overworld.scn", &self.objectManager);
         if (loadedScene == null) {

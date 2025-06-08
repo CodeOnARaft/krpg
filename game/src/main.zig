@@ -11,7 +11,7 @@ pub fn main() anyerror!void {
 
     raylib.disableCursor();
     var gameManager = managers.GameManager{};
-    try gameManager.initialize();
+    try gameManager.initialize(std.heap.page_allocator);
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();

@@ -13,17 +13,19 @@ pub const Object = struct {
 pub const ObjectInstance = struct {
     position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     rotation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
-    trigger: shared.types.Trigger = undefined,
-    hasTrigger: bool = false,
 
     name: []const u8 = undefined,
     type: []const u8 = undefined,
+    description: []const u8 = undefined,
     objectManager: *shared.managers.ObjectsManager = undefined,
 
-    pub fn load(scene_name: []const u8, x: i32, z: i32, scene: *shared.types.Scene) !void {
+    pub fn load(allocator: std.mem.Allocator, scene_name: []const u8, x: i32, z: i32, scene: *shared.types.Scene) !void {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        const arena_allocator = arena.allocator();
+
         const cwd = std.fs.cwd();
-        const allocator = std.heap.page_allocator;
-        const filename = std.fmt.allocPrint(allocator, "{s}/map/{s}_{}_{}.gbl", .{ shared.settings.gameSettings.resourceDirectory, scene_name, x, z }) catch |err| {
+        const filename = std.fmt.allocPrint(arena_allocator, "{s}/map/{s}_{}_{}.gbl", .{ shared.settings.gameSettings.resourceDirectory, scene_name, x, z }) catch |err| {
             std.debug.print("Error allocating filename: {}\n", .{err});
             return err;
         };
@@ -44,7 +46,7 @@ pub const ObjectInstance = struct {
             if (std.mem.endsWith(u8, line, "\r")) {
                 lline = line[0 .. line.len - 1];
             }
-            var parts: ArrayList([]const u8) = ArrayList([]const u8).init(std.heap.page_allocator);
+            var parts: ArrayList([]const u8) = ArrayList([]const u8).init(arena_allocator);
             var it = std.mem.splitScalar(u8, lline, ' ');
 
             while (it.next()) |commandPart| {
@@ -64,23 +66,18 @@ pub const ObjectInstance = struct {
                 }
 
                 std.debug.print("obj: {s}\n", .{parts.items[1]});
-                const nameBuffer = allocator.alloc(u8, parts.items[1].len) catch |err| {
-                    std.debug.print("Error allocating name buffer: {}\n", .{err});
-                    return err;
-                };
-                std.mem.copyForwards(u8, nameBuffer, parts.items[1]);
+
+                const c_name = try allocator.dupe(u8, parts.items[1]);
                 obj = shared.types.GameObjects.ObjectInstance{
-                    .name = nameBuffer,
+                    .name = c_name,
                     .objectManager = scene.objectManager,
                 };
             } else if (std.mem.eql(u8, parts.items[0], "type")) {
                 std.debug.print("obj: {s}\n", .{parts.items[1]});
-                const typeBuffer = allocator.alloc(u8, parts.items[1].len) catch |err| {
-                    std.debug.print("Error allocating name buffer: {}\n", .{err});
-                    return err;
-                };
-                std.mem.copyForwards(u8, typeBuffer, parts.items[1]);
-                obj.type = typeBuffer;
+
+                const c_type = try allocator.dupe(u8, parts.items[1]);
+                obj.type = c_type;
+                std.debug.print("obj type: {s}\n", .{obj.type});
             } else if (std.mem.eql(u8, parts.items[0], "position")) {
                 const obj_x = std.fmt.parseFloat(f32, parts.items[1]) catch |err| {
                     std.debug.print("Error parsing x: {}\n", .{err});
@@ -152,5 +149,15 @@ pub const ObjectInstance = struct {
             },
             shared.managers.ObjectManagerModes.Rotation => {},
         }
+    }
+
+    pub fn drawTrigger(self: *ObjectInstance, frame_allocator: std.mem.Allocator) anyerror!void {
+        _ = self;
+        _ = frame_allocator;
+    }
+
+    pub fn updateTrigger(self: *ObjectInstance, frame_allocator: std.mem.Allocator) anyerror!void {
+        _ = self;
+        _ = frame_allocator;
     }
 };

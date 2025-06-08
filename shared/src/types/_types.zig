@@ -2,7 +2,6 @@
 pub usingnamespace @import("GroundSector.zig");
 pub usingnamespace @import("Scene.zig");
 pub usingnamespace @import("Console.zig");
-pub usingnamespace @import("Trigger.zig");
 pub usingnamespace @import("enums.zig");
 
 // namespace types.GameObjects

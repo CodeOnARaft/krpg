@@ -24,14 +24,16 @@ pub const Scene = struct {
     loadedObjects: ArrayList(types.GameObjects.ObjectInstance) = undefined,
     sceneTriggers: ArrayList(interfaces.TriggerInterface) = undefined,
     startLocation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
-    currentTrigger: *types.Trigger = types.emptyTriggerPtr,
     camera: *raylib.Camera3D = undefined,
     gameManager: *managers.GameManager = undefined,
     objectManager: *managers.ObjectsManager = undefined,
 
-    pub fn new() !Scene {
-        const blankName = try util.string.constU8toU8("_blank");
-        return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(std.heap.page_allocator), .loadedObjects = ArrayList(types.GameObjects.ObjectInstance).init(std.heap.page_allocator), .loadedNPCs = ArrayList(types.GameObjects.NPC).init(std.heap.page_allocator) };
+    pub fn new(allocator: std.mem.Allocator) !Scene {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        const arena_allocator = arena.allocator();
+        const blankName = try util.string.constU8toU8(arena_allocator, "_blank");
+        return Scene{ .id = blankName, .loadedSectors = ArrayList(types.GroundSector).init(allocator), .loadedObjects = ArrayList(types.GameObjects.ObjectInstance).init(allocator), .loadedNPCs = ArrayList(types.GameObjects.NPC).init(allocator) };
     }
 
     pub fn load(allocator: std.mem.Allocator, scene_name: []const u8, objectManager: *shared.managers.ObjectsManager) !?Scene {
@@ -39,9 +41,8 @@ pub const Scene = struct {
         defer arena.deinit();
         const arena_allocator = arena.allocator();
 
-        var scene = try new();
+        var scene = try new(allocator);
         scene.objectManager = objectManager;
-        scene.currentTrigger = types.emptyTriggerPtr;
 
         const cwd = std.fs.cwd();
         const filename = try std.fmt.allocPrint(arena_allocator, "{s}/map/{s}", .{ shared.settings.gameSettings.resourceDirectory, scene_name });
@@ -74,7 +75,7 @@ pub const Scene = struct {
             var it = std.mem.splitScalar(u8, line, ' ');
 
             while (it.next()) |commandPart| {
-                const partU8 = try util.string.constU8toU8(commandPart);
+                const partU8 = try util.string.constU8toU8(arena_allocator, commandPart);
                 try parts.append(partU8);
             }
 
@@ -115,7 +116,7 @@ pub const Scene = struct {
                     return null;
                 };
 
-                const sector = try map.LoadGroundSectorFromFile(sc_fn, x, z);
+                const sector = try map.LoadGroundSectorFromFile(allocator, sc_fn, x, z);
 
                 if (sector == null) {
                     std.debug.print("Error loading sector: {} {}\n", .{ x, z });
@@ -126,7 +127,7 @@ pub const Scene = struct {
                 try scene.loadedSectors.append(sector.?);
 
                 try types.GameObjects.NPC.load(allocator, sc_fn, x, z, &scene);
-                try types.GameObjects.ObjectInstance.load(sc_fn, x, z, &scene);
+                try types.GameObjects.ObjectInstance.load(allocator, sc_fn, x, z, &scene);
             }
         }
 
@@ -137,6 +138,10 @@ pub const Scene = struct {
         scene.sceneTriggers = ArrayList(interfaces.TriggerInterface).init(allocator);
         for (0..scene.loadedNPCs.items.len) |trigger_index| {
             try scene.sceneTriggers.append(interfaces.TriggerInterface.init(&scene.loadedNPCs.items[trigger_index]));
+        }
+
+        for (0..scene.loadedObjects.items.len) |trigger_index| {
+            try scene.sceneTriggers.append(interfaces.TriggerInterface.init(&scene.loadedObjects.items[trigger_index]));
         }
 
         return scene;

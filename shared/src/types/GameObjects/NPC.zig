@@ -86,7 +86,7 @@ pub const NPC = struct {
             var it = std.mem.splitScalar(u8, lline, ' ');
 
             while (it.next()) |commandPart| {
-                const partU8 = try util.string.constU8toU8(commandPart);
+                const partU8 = try util.string.constU8toU8(arena_allocator, commandPart);
                 try parts.append(partU8);
             }
 

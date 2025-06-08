@@ -124,7 +124,6 @@ pub const Console = struct {
                         displayedCount += 1;
                     }
                 }
-                std.debug.print("Displayed command history count: {}-{}\n", .{ displayedCount, self.historyIndex });
 
                 // Draw current input line
                 const terminal = std.fmt.allocPrintZ(self.arena.allocator(), "> {s}", .{self.typedText}) catch |err| {

@@ -10,18 +10,19 @@ const interfaces = types.interfaces;
 pub const ObjectsManager = struct {
     objects: ArrayList(types.GameObjects.Object) = undefined,
 
-    pub fn init(self: *ObjectsManager) !void {
-        self.objects = ArrayList(types.GameObjects.Object).init(std.heap.page_allocator);
+    pub fn init(self: *ObjectsManager, allocator: std.mem.Allocator) !void {
+        self.objects = ArrayList(types.GameObjects.Object).init(allocator);
 
-        try self.loadObjects();
+        try self.loadObjects(allocator);
     }
 
-    fn loadObjects(self: *ObjectsManager) !void {
-        const allocator = std.heap.page_allocator;
+    fn loadObjects(self: *ObjectsManager, allocator: std.mem.Allocator) !void {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        const arena_allocator = arena.allocator();
 
         // Open objects directory
-        const sub = try std.fmt.allocPrintZ(allocator, "{s}/objects", .{shared.settings.gameSettings.resourceDirectory});
-        defer allocator.free(sub);
+        const sub = try std.fmt.allocPrintZ(arena_allocator, "{s}/objects", .{shared.settings.gameSettings.resourceDirectory});
         const cwd = try std.fs.cwd().openDir(sub, std.fs.Dir.OpenOptions{ .iterate = true });
 
         // iterate over files and load "prefab"
@@ -40,13 +41,12 @@ pub const ObjectsManager = struct {
                 var in_stream = buf_reader.reader();
                 var buf: [1024]u8 = undefined;
                 while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
-                    var parts: ArrayList([]u8) = ArrayList([]u8).init(allocator);
-                    defer parts.deinit();
+                    var parts: ArrayList([]u8) = ArrayList([]u8).init(arena_allocator);
 
                     var it = std.mem.splitScalar(u8, line, ' ');
 
                     while (it.next()) |commandPart| {
-                        const partU8 = try util.string.constU8toU8(commandPart);
+                        const partU8 = try util.string.constU8toU8(arena_allocator, commandPart);
                         try parts.append(partU8);
                     }
 
@@ -56,17 +56,16 @@ pub const ObjectsManager = struct {
                     }
 
                     if (std.mem.eql(u8, parts.items[0], "name")) {
-                        new_object.name = parts.items[1];
+                        const c_name = try allocator.dupe(u8, parts.items[1]);
+                        new_object.name = c_name;
                     } else if (std.mem.eql(u8, parts.items[0], "model")) {
-                        const filename = try std.fmt.allocPrintZ(allocator, "{s}/objects/{s}", .{ shared.settings.gameSettings.resourceDirectory, parts.items[1] });
+                        const filename = try std.fmt.allocPrintZ(arena_allocator, "{s}/objects/{s}", .{ shared.settings.gameSettings.resourceDirectory, parts.items[1] });
                         std.debug.print("Loading model: {s}\n", .{filename});
-                        defer allocator.free(filename);
 
                         new_object.model = try raylib.loadModel(filename);
                     } else if (std.mem.eql(u8, parts.items[0], "texture")) {
-                        const filename = try std.fmt.allocPrintZ(allocator, "{s}/objects/{s}", .{ shared.settings.gameSettings.resourceDirectory, parts.items[1] });
+                        const filename = try std.fmt.allocPrintZ(arena_allocator, "{s}/objects/{s}", .{ shared.settings.gameSettings.resourceDirectory, parts.items[1] });
                         std.debug.print("Loading model: {s}\n", .{filename});
-                        defer allocator.free(filename);
 
                         const texture = try raylib.loadTexture(filename);
 

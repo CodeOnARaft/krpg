@@ -42,10 +42,13 @@ pub fn SaveGroundSectorToFile(scene_name: []u8, sector: types.GroundSector) anye
     return true;
 }
 
-pub fn LoadGroundSectorFromFile(scene_name: []const u8, x: i32, z: i32) !?types.GroundSector {
+pub fn LoadGroundSectorFromFile(allocator: std.mem.Allocator, scene_name: []const u8, x: i32, z: i32) !?types.GroundSector {
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
+    const arena_allocator = arena.allocator();
+
     const cwd = std.fs.cwd();
-    const allocator = std.heap.page_allocator;
-    const filename = std.fmt.allocPrint(allocator, "{s}/map/{s}_{}_{}.gs", .{ shared.settings.gameSettings.resourceDirectory, scene_name, x, z }) catch |err| {
+    const filename = std.fmt.allocPrint(arena_allocator, "{s}/map/{s}_{}_{}.gs", .{ shared.settings.gameSettings.resourceDirectory, scene_name, x, z }) catch |err| {
         std.debug.print("Error allocating filename: {}\n", .{err});
         return null;
     };
@@ -63,32 +66,32 @@ pub fn LoadGroundSectorFromFile(scene_name: []const u8, x: i32, z: i32) !?types.
     var buf: [1024]u8 = undefined;
     var index: usize = 0;
     while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
-        var parts: ArrayList([]u8) = ArrayList([]u8).init(std.heap.page_allocator);
+        var parts: ArrayList([]u8) = ArrayList([]u8).init(arena_allocator);
         var it = std.mem.splitScalar(u8, line, ',');
 
         while (it.next()) |commandPart| {
-            const partU8 = try util.string.constU8toU8(commandPart);
+            const partU8 = try util.string.constU8toU8(arena_allocator, commandPart);
             try parts.append(partU8);
         }
 
-        const p0: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[0]));
-        const p1: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[1]));
-        const p2: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[2]));
-        const p3: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[3]));
-        const p4: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[4]));
-        const p5: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[5]));
-        const p6: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[6]));
-        const p7: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[7]));
-        const p8: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[8]));
-        const p9: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[9]));
-        const p10: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[10]));
-        const p11: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[11]));
-        const p12: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[12]));
-        const p13: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[13]));
-        const p14: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(parts.items[14]));
-        const p15: u8 = try std.fmt.parseInt(u8, util.string.trimSpaceEOL(parts.items[15]), 10);
-        const p16: u8 = try std.fmt.parseInt(u8, util.string.trimSpaceEOL(parts.items[16]), 10);
-        const p17: u8 = try std.fmt.parseInt(u8, util.string.trimSpaceEOL(parts.items[17]), 10);
+        const p0: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[0]));
+        const p1: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[1]));
+        const p2: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[2]));
+        const p3: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[3]));
+        const p4: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[4]));
+        const p5: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[5]));
+        const p6: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[6]));
+        const p7: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[7]));
+        const p8: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[8]));
+        const p9: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[9]));
+        const p10: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[10]));
+        const p11: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[11]));
+        const p12: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[12]));
+        const p13: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[13]));
+        const p14: f32 = try std.fmt.parseFloat(f32, util.string.trimSpaceEOL(arena_allocator, parts.items[14]));
+        const p15: u8 = try std.fmt.parseInt(u8, util.string.trimSpaceEOL(arena_allocator, parts.items[15]), 10);
+        const p16: u8 = try std.fmt.parseInt(u8, util.string.trimSpaceEOL(arena_allocator, parts.items[16]), 10);
+        const p17: u8 = try std.fmt.parseInt(u8, util.string.trimSpaceEOL(arena_allocator, parts.items[17]), 10);
 
         const a = raylib.Vector3.init(p0, p1, p2);
         const b = raylib.Vector3.init(p3, p4, p5);
