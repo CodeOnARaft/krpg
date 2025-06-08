@@ -47,12 +47,14 @@ pub const Console = struct {
     height: f32 = consoleMinHeight,
     typedText: []const u8 = "",
     game_manager: *managers.GameManager = undefined,
-    lastKeyCode: raylib.KeyboardKey = raylib.KeyboardKey.null,
-    lastRead: f32 = 0.0,
+
     arena: std.heap.ArenaAllocator = undefined,
     allocator: std.mem.Allocator = undefined,
     commandHistory: [10][]const u8 = [_][]const u8{""} ** 10,
+    replyHistory: [10][]const u8 = [_][]const u8{""} ** 10,
+
     historyIndex: usize = 0,
+    replyIndex: usize = 0,
 
     pub fn init(self: *Console, game_manager: *managers.GameManager) void {
         self.game_manager = game_manager;
@@ -248,33 +250,34 @@ pub const Console = struct {
     }
 
     pub fn findKeyReleased(self: *Console) basic.CharValue {
-        self.lastRead += raylib.getFrameTime();
-        if (self.lastKeyCode == raylib.KeyboardKey.null or self.lastRead > 1.0) {
-            self.lastKeyCode = raylib.getKeyPressed();
-            self.lastRead = 0.0;
+        _ = self;
+        for (65..90) |keyCode| {
+            const x: raylib.KeyboardKey = @enumFromInt(keyCode);
+            if (raylib.isKeyReleased(x)) {
+                return basic.CharValue{ .value = @intCast(keyCode), .isPressed = true };
+            }
+        }
+        for (44..57) |keyCode| {
+            const x: raylib.KeyboardKey = @enumFromInt(keyCode);
+            if (raylib.isKeyReleased(x)) {
+                return basic.CharValue{ .value = @intCast(keyCode), .isPressed = true };
+            }
+        }
+        for ([_]usize{
+            32,
+        }) |keyCode| {
+            const x: raylib.KeyboardKey = @enumFromInt(keyCode);
+            if (raylib.isKeyReleased(x)) {
+                return basic.CharValue{ .value = @intCast(keyCode), .isPressed = true };
+            }
         }
 
-        if (raylib.isKeyReleased(self.lastKeyCode)) {
-            //  std.debug.print("Key released: {}\n", .{lastKeyCode});
+        if (raylib.isKeyReleased(raylib.KeyboardKey.backspace)) {
+            return basic.CharValue{ .value = 0, .isPressed = true, .isBackspace = true };
+        }
 
-            if (self.lastKeyCode == raylib.KeyboardKey.backspace) {
-                self.lastKeyCode = raylib.KeyboardKey.null;
-                return basic.CharValue{ .value = 0, .isPressed = true, .isBackspace = true };
-            }
-
-            if (self.lastKeyCode == raylib.KeyboardKey.enter) {
-                self.lastKeyCode = raylib.KeyboardKey.null;
-                return basic.CharValue{ .value = 0, .isPressed = true, .isEnter = true };
-            }
-
-            const val: i32 = @intFromEnum(self.lastKeyCode);
-            self.lastKeyCode = raylib.KeyboardKey.null;
-
-            if (val == 32 or (val >= 32 and val <= 126)) {
-                return basic.CharValue{ .value = @intCast(val), .isPressed = true };
-            }
-        } else {
-            // std.debug.print("Key wait: {}\n", .{lastKeyCode});
+        if (raylib.isKeyReleased(raylib.KeyboardKey.enter)) {
+            return basic.CharValue{ .value = 0, .isPressed = true, .isEnter = true };
         }
 
         return basic.CharValue{ .value = 0, .isPressed = false };
