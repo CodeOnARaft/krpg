@@ -7,6 +7,7 @@ const managers = shared.managers;
 const basic = types.Basic;
 const util = shared.utility;
 const map = shared.map;
+const interfaces = shared.types.interfaces;
 
 const SceneTypes = enum {
     Blank,
@@ -21,6 +22,7 @@ pub const Scene = struct {
     loadedSectors: ArrayList(types.GroundSector) = undefined,
     loadedNPCs: ArrayList(types.GameObjects.NPC) = undefined,
     loadedObjects: ArrayList(types.GameObjects.ObjectInstance) = undefined,
+    sceneTriggers: ArrayList(interfaces.TriggerInterface) = undefined,
     startLocation: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     currentTrigger: *types.Trigger = types.emptyTriggerPtr,
     camera: *raylib.Camera3D = undefined,
@@ -131,6 +133,12 @@ pub const Scene = struct {
         const startLocationY = scene.getYValueBasedOnLocation(scene.startLocation.x, scene.startLocation.z);
         scene.startLocation = raylib.Vector3{ .x = scene.startLocation.x, .y = startLocationY, .z = scene.startLocation.z };
 
+        // load triggers
+        scene.sceneTriggers = ArrayList(interfaces.TriggerInterface).init(allocator);
+        for (0..scene.loadedNPCs.items.len) |trigger_index| {
+            try scene.sceneTriggers.append(interfaces.TriggerInterface.init(&scene.loadedNPCs.items[trigger_index]));
+        }
+
         return scene;
     }
 
@@ -181,7 +189,7 @@ pub const Scene = struct {
     }
 
     pub fn update(self: *Scene, frame_allocator: std.mem.Allocator) anyerror!void {
-        _ = frame_allocator; // Unused for now
+        //_ = frame_allocator; // Unused for now
         if (!shared.settings.gameSettings.paused and !shared.settings.gameSettings.editing) {
             self.gameManager.camera.update(.first_person);
             self.gameManager.camera.up = raylib.Vector3.init(0, 1, 0);
@@ -202,11 +210,9 @@ pub const Scene = struct {
             }
 
             if (raylib.isKeyReleased(raylib.KeyboardKey.e)) {
-                if (self.currentTrigger.type != types.TriggerTypes.Empty) {
-                    std.debug.print("Interacting with trigger: {s} \n", .{self.currentTrigger.description});
-                    self.currentTrigger = types.emptyTriggerPtr;
-                } else {
-                    std.debug.print("No trigger to interact with\n", .{});
+                for (0..self.sceneTriggers.items.len) |index| {
+                    const trigger = self.sceneTriggers.items[index];
+                    try trigger.updateTrigger(frame_allocator);
                 }
             }
         }
@@ -240,21 +246,19 @@ pub const Scene = struct {
             }
         }
 
-        self.drawUI(frame_allocator);
+        try self.drawUI(frame_allocator);
     }
 
-    pub fn drawUI(self: *Scene, frame_allocator: std.mem.Allocator) void {
-        _ = frame_allocator; // Unused for now
+    pub fn drawUI(self: *Scene, frame_allocator: std.mem.Allocator) anyerror!void {
+        //_ = frame_allocator; // Unused for now
         if (shared.settings.gameSettings.editing) {
             return;
         }
 
-        var i: usize = 0;
-        while (i < self.loadedNPCs.items.len) : (i += 1) {
-            if (self.loadedNPCs.items[i].trigger.checkCollision(util.getViewingRay())) {
-                self.currentTrigger = &self.loadedNPCs.items[i].trigger;
-                types.ui.InteractInfo.drawUI(@ptrCast(self.loadedNPCs.items[i].trigger.description));
-            }
+        // Draw the interact info if a trigger is active
+        for (0..self.sceneTriggers.items.len) |index| {
+            const trigger = self.sceneTriggers.items[index];
+            try trigger.drawTrigger(frame_allocator);
         }
     }
 };

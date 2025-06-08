@@ -11,21 +11,21 @@ pub const NPC = struct {
     position: raylib.Vector3 = raylib.Vector3{ .x = 0.0, .y = 0.0, .z = 0.0 },
     heading: raylib.Vector2 = raylib.Vector2{ .x = 0.0, .y = 0.0 },
     texture: raylib.Texture2D = undefined,
-    trigger: types.Trigger = types.Trigger{ .type = types.TriggerTypes.Empty, .description = @constCast("empty") },
-
+    boundingBox: raylib.BoundingBox = undefined,
     active: bool = true,
+    size: f32 = 0.4,
+    size_height: f32 = 0.8,
 
     pub fn setPosition(self: *NPC, x: f32, y: f32, z: f32) void {
         self.position = raylib.Vector3{ .x = x, .y = y, .z = z };
-        self.trigger.setPosition(x, y, z);
-        self.trigger.description = self.name;
-    }
-
-    pub fn setTriggerType(self: *NPC, triggerType: types.TriggerTypes) void {
-        self.trigger.type = triggerType;
+        self.boundingBox = raylib.BoundingBox{
+            .min = raylib.Vector3{ .x = x - self.size, .y = y - self.size_height, .z = z - self.size },
+            .max = raylib.Vector3{ .x = x + self.size, .y = y + self.size_height, .z = z + self.size },
+        };
     }
 
     pub fn draw(self: *NPC, frame_allocator: std.mem.Allocator, camera: raylib.Camera3D) void {
+        _ = frame_allocator;
         if (!self.active) {
             return;
         }
@@ -50,12 +50,9 @@ pub const NPC = struct {
             return;
         }
 
-        std.debug.print("Drawing NPC {s}: texture_id={}, pos=({}, {}, {})\n", .{ self.name, self.texture.id, self.position.x, self.position.y, self.position.z });
+        //std.debug.print("Drawing NPC {s}: texture_id={}, pos=({}, {}, {})\n", .{ self.name, self.texture.id, self.position.x, self.position.y, self.position.z });
 
         raylib.drawBillboard(camera, self.texture, self.position, 2.0, raylib.Color.white);
-        if (settings.gameSettings.debug) {
-            self.trigger.draw(frame_allocator);
-        }
     }
 
     pub fn load(allocator: std.mem.Allocator, scene_name: []const u8, x: i32, z: i32, scene: *types.Scene) !void {
@@ -101,7 +98,6 @@ pub const NPC = struct {
             std.debug.print("NPC Part 0: {s}\n", .{parts.items[0]});
             if (std.mem.eql(u8, parts.items[0], "npc")) {
                 if (npc.name.len > 0) {
-                    npc.setTriggerType(types.TriggerTypes.Conversation);
                     try scene.loadedNPCs.append(npc);
                 }
 
@@ -143,8 +139,40 @@ pub const NPC = struct {
 
         std.debug.print("NPC: {s}\n", .{npc.name});
         if (npc.name.len > 0) {
-            npc.setTriggerType(types.TriggerTypes.Conversation);
             try scene.loadedNPCs.append(npc);
         }
+    }
+
+    pub fn drawTrigger(self: *NPC, frame_allocator: std.mem.Allocator) void {
+        _ = frame_allocator;
+        if (!self.active) {
+            return;
+        }
+
+        if (self.checkCollision(util.getViewingRay())) {
+            types.ui.InteractInfo.drawUI(self.name);
+        }
+    }
+
+    pub fn updateTrigger(self: *NPC, frame_allocator: std.mem.Allocator) anyerror!void {
+        _ = frame_allocator;
+        if (!self.active) {
+            return;
+        }
+    }
+
+    pub fn checkCollision(self: *NPC, ray: raylib.Ray) bool {
+        var hit = false;
+
+        const col: raylib.RayCollision = raylib.getRayCollisionBox(ray, self.boundingBox);
+
+        if (col.hit) {
+            const dis = util.vector3.distanceVector3_XZ(self.position, util.camera.position);
+            if (dis < types.Constants.interactDistance) {
+                hit = true;
+            }
+        }
+
+        return hit;
     }
 };
