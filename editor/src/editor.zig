@@ -32,7 +32,7 @@ pub const EditorWindow = struct {
         self.menu = ui.Menu{};
         self.menu.init(self);
 
-        try shared.settings.gameSettings.init();
+        try shared.settings.gameSettings.init(std.heap.page_allocator);
         shared.settings.gameSettings.editing = true;
 
         self.sceneWindow = ui.SceneWindow{};
@@ -58,7 +58,7 @@ pub const EditorWindow = struct {
         try self.mb.init(self);
 
         self.objectManager = shared.managers.ObjectsManager{};
-        try self.objectManager.init();
+        try self.objectManager.init(std.heap.page_allocator);
     }
 
     pub fn mbCallback(dd: *ui.dialog.MessageBox, result: i32) anyerror!void {
@@ -74,14 +74,14 @@ pub const EditorWindow = struct {
         }
     }
 
-    pub fn update(self: *EditorWindow) !void {
+    pub fn update(self: *EditorWindow, frame_allocator: std.mem.Allocator) !void {
         var handled = try self.ofd.update();
         handled = try self.mb.update() or handled;
         if (handled) {
             return;
         }
 
-        handled = try self.menu.update();
+        handled = try self.menu.update(frame_allocator);
         handled = self.sceneWindow.update() or handled;
         handled = self.propertyWindow.update() or handled;
 
@@ -161,7 +161,7 @@ pub const EditorWindow = struct {
         return raylib.checkCollisionPointRec(mouse, raylib.Rectangle{ .x = ui.Constants.SceneWidth, .y = ui.Constants.MenuHeightf, .height = @as(f32, @floatFromInt(raylib.getScreenHeight())) - ui.Constants.MenuHeightf, .width = @as(f32, @floatFromInt(raylib.getScreenWidth())) - (ui.Constants.SceneWidth * 2) });
     }
 
-    pub fn draw(self: *EditorWindow) !void {
+    pub fn draw(self: *EditorWindow, frame_allocator: std.mem.Allocator) !void {
         raylib.beginDrawing();
         defer raylib.endDrawing();
 
@@ -171,7 +171,7 @@ pub const EditorWindow = struct {
             self.camera.begin();
             defer self.camera.end();
             if (self.sceneLoaded) {
-                try self.currentScene.draw();
+                try self.currentScene.draw(frame_allocator);
                 if (self.objectSelected) {
                     try self.selectedObject.drawSelected(self.GetObjectMode());
                 }

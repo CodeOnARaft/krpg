@@ -1,3 +1,4 @@
+const std = @import("std");
 const raylib = @import("raylib");
 const raygui = @import("raygui");
 const Editor = @import("editor.zig");
@@ -10,11 +11,16 @@ pub fn main() anyerror!void {
     // raylib.toggleFullscreen();
     raygui.guiLoadStyle("resources/style_cyber.rgs");
 
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
     var editor = Editor.EditorWindow{};
     try editor.init();
 
     while (!raylib.windowShouldClose()) {
-        try editor.update();
-        try editor.draw();
+        defer _ = arena.reset(.retain_capacity);
+
+        try editor.update(arena.allocator());
+        try editor.draw(arena.allocator());
     }
 }

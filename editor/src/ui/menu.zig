@@ -29,7 +29,8 @@ pub const Menu = struct {
         self.selectIcon(handIcon.iconId);
     }
 
-    pub fn update(self: *Menu) !bool {
+    pub fn update(self: *Menu, frame_allocator: std.mem.Allocator) !bool {
+        _ = frame_allocator; // Unused in this function, but can be used for future allocations if needed.
         const mouse = raylib.getMousePosition();
         if (!raylib.checkCollisionPointRec(mouse, self.menuLocation) or !raylib.isMouseButtonReleased(.left)) {
             return false;
